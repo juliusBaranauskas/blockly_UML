@@ -60,6 +60,17 @@ function parseMethod(method) {
   methodRetTypeEl = methodRetTypeEl[0];
   let methodRetType = methodRetTypeEl.textContent;
 
+  if (methodRetType === "custom_type") {
+    // find if a custom type name is attached
+    let typeEl = parseXmlByAttr(method, "value", "name", "method_type");
+    if (typeEl) {
+      typeEl = typeEl[0];
+      let typeTextEl = parseXmlByAttr(typeEl, "field", "name", "TEXT");
+      if (typeTextEl)
+        methodRetType = typeTextEl[0].textContent;
+    }
+  }
+
   // Get method name
   let nameEl = parseXmlByAttr(method, "value", "name", "method_name");
   if (!nameEl)
@@ -86,6 +97,19 @@ function parseMethod(method) {
     }
   }
 
+  // Get method staticness
+  let methodIsStatic = false;
+  let staticnessEl = parseXmlByAttr(method, "value", "name", "is_static");
+  if (staticnessEl) {
+    staticnessEl = staticnessEl[0];
+    
+    let staticnessBoolEl = parseXmlByAttr(staticnessEl, "field", "name", "BOOL");
+    if (staticnessBoolEl) {
+      staticnessBoolEl = staticnessBoolEl[0];
+      methodIsStatic = staticnessBoolEl.textContent === "TRUE";
+    }
+  }
+
   // Get method parameters
   let parameters = [];
   let parametersEl = parseXmlByAttr(method, "statement", "name", "parameters");
@@ -104,7 +128,8 @@ function parseMethod(method) {
     name: methodName,
     returnType: methodRetType,
     visibility: methodVisibility,
-    parameters: parameters
+    parameters: parameters,
+    isStatic: methodIsStatic
   }
 }
 
@@ -148,7 +173,6 @@ function parseField(field) {
 
   let fieldName = nameTextEl.textContent;
 
-
   // Get field visibility
   let fieldVisibility = DEFAULT_VISIBILITY;
   let visibilityEl = parseXmlByAttr(field, "value", "name", "field_visibility");
@@ -162,10 +186,24 @@ function parseField(field) {
     }
   }
 
+  // Get field staticness
+  let fieldIsStatic = false;
+  let staticnessEl = parseXmlByAttr(field, "value", "name", "is_static");
+  if (staticnessEl) {
+    staticnessEl = staticnessEl[0];
+    
+    let staticnessBoolEl = parseXmlByAttr(staticnessEl, "field", "name", "BOOL");
+    if (staticnessBoolEl) {
+      staticnessBoolEl = staticnessBoolEl[0];
+      fieldIsStatic = staticnessBoolEl.textContent === "TRUE";
+    }
+  }
+
   return {
     name: fieldName,
     returnType: fieldType,
-    visibility: fieldVisibility
+    visibility: fieldVisibility,
+    isStatic: fieldIsStatic
   }
 }
 
@@ -182,7 +220,7 @@ function parseXmlFields(element) {
   let resultFields = [];
   fields.forEach(field => {
     const parsedField = parseField(field);
-    if (parsedField);
+    if (parsedField)
       resultFields.push(parsedField);
   });
   
