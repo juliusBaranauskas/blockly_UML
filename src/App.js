@@ -89,39 +89,6 @@ export default function App() {
     ],
   };
 
-
-
-  // function parseXmlName(element) {
-  //   let nameEl = Array.from(element.getElementsByTagName("value")).filter(el => el.attributes.getNamedItem("name").value === "classname_joint");
-  //   if (!nameEl || nameEl.length === 0)
-  //     return; // assign default name that is available [ClassXX]
-  //   nameEl = nameEl[0];
-
-  //   let nameTextEl = Array.from(nameEl.getElementsByTagName("field"))?.filter(el => el.attributes.getNamedItem("name").value === "TEXT");
-  //   if (!nameTextEl || nameTextEl.length === 0)
-  //     return;
-
-  //   nameTextEl = nameTextEl[0];
-  //   return nameTextEl.textContent;
-  // }
-
-  // function parseXMLClasses(xmlClasses) {
-  //   let classes = [];
-  //   xmlClasses.forEach(element => {
-  //     let name = parseXmlName(element);
-  //     let methods = parseXmlMethods(element);
-  //     let fields = parseXmlFields(element);
-
-  //     let classItem = {
-  //       name: name,
-  //     }
-  //     classes.push(classItem);
-  //     console.log(classItem.name);
-  //   });
-
-  //   return classes;
-  // }
-
   function workspaceDidChange(workspace) {
     console.log(workspace);
     // const code = Blockly.JavaScript.workspaceToCode(workspace);
@@ -155,7 +122,11 @@ export default function App() {
       if (params.length !== 0) {
         params = params.substring(0, params.length-1);
       }
-      umlString = umlString.concat(`${indent}${method.returnType} ${method.name}(${params})`);
+      umlString = umlString.concat(`${indent}${method.returnType} ${method.name}(${params})\n`);
+    });
+
+    demoClass.fields?.forEach(field => {
+      umlString = umlString.concat(`${indent}${field.returnType} ${field.name}\n`);
     });
     umlString = umlString.concat('\n}');
     setJavascriptCode(umlString);

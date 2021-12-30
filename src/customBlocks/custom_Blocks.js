@@ -122,7 +122,7 @@ Blockly.Blocks['visibility'] = {
     init: function() {
       this.appendDummyInput()
           .appendField("Element visibility")
-          .appendField(new Blockly.FieldDropdown([["public","visibility_public"], ["protected","visibility_protected"], ["private","visibility_private"], ["package","visibility_package"]]), "element_visibility");
+          .appendField(new Blockly.FieldDropdown([["public","public"], ["protected","protected"], ["private","private"], ["package","package"]]), "element_visibility");
       this.setOutput(true, "visibility");
       this.setColour(230);
    this.setTooltip("");
