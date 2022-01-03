@@ -165,3 +165,32 @@ Blockly.JavaScript['function_parameter'] = function(block) {
   var code = 'A function parameter';
   return code;
 };
+
+Blockly.Blocks['connection_hub'] = {
+  init: function() {
+    this.appendValueInput("connected_class")
+        .appendField("connection hub")
+        .setCheck("class");
+    this.appendStatementInput("connections")
+        .setCheck("connection");
+    this.setColour(230);
+ this.setTooltip("");
+ this.setHelpUrl("");
+  }
+};
+
+Blockly.Blocks['connection'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField("Connected using")
+        .appendField(new Blockly.FieldDropdown([[{"src":"./relationships/association.png","width":50,"height":20,"alt":"*"},"ASSOCIATION"], [{"src":"./relationships/bidir_association.png","width":50,"height":15,"alt":"*"},"BIDIR_ASSOCIATION"], [{"src":"./relationships/aggregation.png","width":50,"height":20,"alt":"*"},"AGGREGATION"], [{"src":"./relationships/composition.png","width":50,"height":15,"alt":"*"},"COMPOSITION"], [{"src":"./relationships/generalization.png","width":50,"height":15,"alt":"*"},"GENERALIZATION"], [{"src":"./relationships/realization.png","width":50,"height":15,"alt":"*"},"REALIZATION"], [{"src":"./relationships/dependency.png","width":50,"height":15,"alt":"*"},"DEPENDENCY"]]), "relationship_type");
+    this.appendDummyInput()
+        .appendField("cardinality")
+        .appendField(new Blockly.FieldDropdown([["0..1","ZERO_OR_ONE"], ["1","ONE"], ["*","ANY"], ["1..*","ONE_OR_MORE"]]), "cardinality_dropdown");
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(230);
+ this.setTooltip("");
+ this.setHelpUrl("");
+  }
+};

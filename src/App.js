@@ -58,6 +58,14 @@ export default function App() {
             kind: "block",
             type: "function_parameter",
           },
+          {
+            kind: "block",
+            type: "connection_hub",
+          },
+          {
+            kind: "block",
+            type: "connection",
+          },
         ],
       },
     ],
