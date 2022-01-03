@@ -7,9 +7,13 @@ import "./InitialPlayground.js";
 import { initialXml } from "./InitialPlayground.js";
 import { parseXMLClasses } from "./XmlParser";
 
+const encoder = require("./encoder.js");
+const defl = require("./deflate.js");
+
 export default function App() {
   const [xml, setXml] = useState("");
   const [javascriptCode, setJavascriptCode] = useState("");
+  const [imgSrc, setImgSrc] = useState("");
 
   React.useEffect(() => {
     // translate xml to plantUML syntax
@@ -138,6 +142,8 @@ export default function App() {
     });
 
     setJavascriptCode(umlString);
+    umlString += "Classname --> Classname2\n";
+    compress(umlString);
   }
 
 /*
@@ -147,6 +153,9 @@ export default function App() {
 }
 */
 
+  function compress(text) {
+    setImgSrc("http://www.plantuml.com/plantuml/img/" + encoder.encode64(defl.deflate(text, 9)));
+  }
   return (
     <>
       <BlocklyWorkspace
@@ -174,6 +183,7 @@ export default function App() {
       <button onClick={generateUml}>
         Mygtukas
       </button>
+      <img alt={""} src={imgSrc} />
   </>
   );
 }
