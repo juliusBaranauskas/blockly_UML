@@ -76,16 +76,11 @@ export default function App() {
   };
 
   function workspaceDidChange(workspace) {
-    console.log(workspace);
+    // console.log(workspace);
     // const code = Blockly.JavaScript.workspaceToCode(workspace);
     // setJavascriptCode(code);
 
-    let parser = new DOMParser();
-    let xmlDoc = parser.parseFromString(xml,"text/xml");
-
-    const classes = Array.from(xmlDoc.getElementsByTagName("block")).filter(el => el.attributes.getNamedItem("type").value === "class");
-    const jsClasses = parseXMLClasses(classes);
-    console.log(jsClasses);
+    generateUml();
   }
 
   function getVisibilityModifier(visibilityString) {
@@ -129,29 +124,18 @@ export default function App() {
   }
 
   function generateUml() {
-    let parser = new DOMParser();
-    let xmlDoc = parser.parseFromString(xml,"text/xml");
-
-    const classes = Array.from(xmlDoc.getElementsByTagName("block")).filter(el => el.attributes.getNamedItem("type").value === "class");
-    const jsClasses = parseXMLClasses(classes);
-
+    const jsClasses = parseXMLClasses(xml);
+    console.log(jsClasses);
     let umlString = "";
     jsClasses.forEach(classDescr => {
       umlString = umlString.concat(generateUMLForClass(classDescr));
       umlString += "\n\n";
     });
 
-    setJavascriptCode(umlString);
     umlString += "Classname --> Classname2\n";
+    setJavascriptCode(umlString);
     compress(umlString);
   }
-
-/*
-  class ArrayList {
-  Object[] elementData
-  size()
-}
-*/
 
   function compress(text) {
     setImgSrc("http://www.plantuml.com/plantuml/img/" + encoder.encode64(defl.deflate(text, 9)));
@@ -181,7 +165,7 @@ export default function App() {
         readOnly
       ></textarea>
       <button onClick={generateUml}>
-        Mygtukas
+        Generate
       </button>
       <img alt={""} src={imgSrc} />
   </>

@@ -8,7 +8,7 @@ function parseXmlByAttr(element, tagName, attrName, attrValue) {
 
   let el = Array.from(element.getElementsByTagName(tagName)).filter(el => el.attributes.getNamedItem(attrName).value === attrValue);
   if (!el || el.length === 0)
-    return undefined; // assign default name that is available [ClassXX]
+    return undefined;
   
   return el;
 }
@@ -227,9 +227,100 @@ function parseXmlFields(element) {
   return resultFields;
 }
 
-export const parseXMLClasses = (xmlClasses) => {
+
+function parseXmlConnections(element, connectedClassId) {
+  
+  let connectionsEl = parseXmlByAttr(element, "statement", "name", "connections");
+  if (!connectionsEl)
+    return [];
+  connectionsEl = connectionsEl[0];
+
+  const allConns = parseXmlByAttr(connectionsEl, "block", "type", "connection");
+  if (!allConns)
+    return [];
+
+  let connections = [];
+  allConns.forEach(conn => {
+    const connType = parseXmlByAttr(conn, "field", "name", "relationship_type")[0].textContent;
+    const connCardinality = parseXmlByAttr(conn, "field", "name", "cardinality_dropdown")[0].textContent;
+    const id = conn.attributes.getNamedItem("id").value;
+
+    connections.push({
+      type: connType,
+      cardinality: connCardinality,
+      connectedClass: connectedClassId,
+      connectorId: id
+    });
+  });
+
+  console.log(connections);
+  return connections;
+}
+
+export const parseXMLClasses = (xml) => {
+
+  let parser = new DOMParser();
+  let xmlDoc = parser.parseFromString(xml, "text/xml");
+
   let classes = [];
-  xmlClasses.forEach(element => {
+  let hubMap = [];
+
+  // find all conn_hubs
+  const allHubs = parseXmlByAttr(xmlDoc, "block", "type", "connection_hub");
+
+  // if a hub has a class, parse and add to [hub_id, class_id] map and classes list
+  // else ignore hub (connectors should not be shown on it) and parse next
+  if (allHubs) {
+    console.log(`hubs count: ${allHubs.length}`);
+    allHubs.forEach(hub => {
+      const hubId = hub.attributes.getNamedItem("id").value;
+      let hub_class = parseXmlByAttr(hub, "block", "type", "class");
+      if (!hub_class)
+        return;
+      hub_class = hub_class[0];
+
+      const classId = hub_class.attributes.getNamedItem("id").value;
+      // console.log(`hub_class id: ${classId}`);
+
+      const name = parseXmlClassName(hub_class);
+      const methods = parseXmlMethods(hub_class);
+      const fields = parseXmlFields(hub_class);
+
+      const classItem = {
+        id: classId,
+        name: name,
+        methods: methods,
+        fields: fields,
+      }
+      // console.log(classItem.name);
+
+      const connections = parseXmlConnections(hub, classId);
+      const connect_hub = {
+        hubId: hubId,
+        classId: classId,
+        connections: connections
+      }
+      classItem["connect_hub"] = connect_hub;
+
+      hubMap[hubId] = classId;
+      classes.push(classItem);
+    });
+  }
+
+  // find all classes
+  let allClasses = Array.from(xmlDoc.getElementsByTagName("block")).filter(el => el.attributes.getNamedItem("type").value === "class");
+  // let allClasses = parseXmlByAttr(xmlDoc, "block", "type", "class");
+
+  const registeredClasses = classes.map(cl => cl.id);
+  // console.log(registeredClasses);
+  // console.log(`${allClasses}`);
+  // filter out the ones already in map
+  allClasses = allClasses.filter(curr => undefined === registeredClasses
+                                                        .find(cl => cl === curr.attributes.getNamedItem("id").value));
+  // console.log(`allclassese:`);
+  //   console.log(`${allClasses}`);
+  // if any classes are left, parse them and add to class list
+  allClasses.forEach(element => {
     let name = parseXmlClassName(element);
     let methods = parseXmlMethods(element);
     let fields = parseXmlFields(element);
@@ -237,10 +328,11 @@ export const parseXMLClasses = (xmlClasses) => {
     let classItem = {
       name: name,
       methods: methods,
-      fields: fields
+      fields: fields,
+      connections: undefined
     }
     classes.push(classItem);
-    console.log(classItem.name);
+    //console.log(classItem.name);
   });
 
   return classes;
