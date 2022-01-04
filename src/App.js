@@ -15,10 +15,6 @@ export default function App() {
   const [javascriptCode, setJavascriptCode] = useState("");
   const [imgSrc, setImgSrc] = useState("");
 
-  React.useEffect(() => {
-    // translate xml to plantUML syntax
-  }, [xml]);
-
   const toolboxCategories = {
     kind: "categoryToolbox",
     contents: [
