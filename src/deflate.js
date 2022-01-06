@@ -15,7 +15,7 @@
 /* Interface:
  * data = deflate(src);
  */
-
+/* eslint-disable */
 /* constant parameters */
 var zip_WSIZE = 32768;		// Sliding Window size
 var zip_STORED_BLOCK = 0;
@@ -1676,3 +1676,4 @@ var onconnect = function sharedWorker(e) {
   };
 };
  
+/* eslint-enable */
