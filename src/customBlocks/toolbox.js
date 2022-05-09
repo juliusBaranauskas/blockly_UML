@@ -18,7 +18,7 @@ export const toolboxCategories = {
     },
     {
       kind: "category",
-      name: "Custom",
+      name: "UML",
       colour: "#5CA699",
       contents: [
         {

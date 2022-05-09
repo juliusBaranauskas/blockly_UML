@@ -9,22 +9,26 @@ function parseXmlByAttr(element, tagName, attrName, attrValue) {
   let el = Array.from(element.getElementsByTagName(tagName)).filter(el => el.attributes.getNamedItem(attrName).value === attrValue);
   if (!el || el.length === 0)
     return undefined;
-  
+
   return el;
 }
 
+function parseXmlClassType(element) {
+  let typeEl = parseXmlByAttr(element, "field", "name", "class_type");
+  if (!typeEl)
+    return "";
+  typeEl = typeEl[0];
+
+  return typeEl.textContent;
+}
+
 function parseXmlClassName(element) {
-  let nameEl = parseXmlByAttr(element, "value", "name", "classname_joint");
+  let nameEl = parseXmlByAttr(element, "field", "name", "class_name_input");
   if (!nameEl)
     return ""; // assign default name that is available [ClassXX]
   nameEl = nameEl[0];
 
-  let nameTextEl = parseXmlByAttr(nameEl, "field", "name", "TEXT");
-  if (!nameTextEl)
-    return "";
-
-  nameTextEl = nameTextEl[0];
-  return nameTextEl.textContent;
+  return nameEl.textContent;
 }
 
 function parseParameter(element) {
@@ -36,21 +40,31 @@ function parseParameter(element) {
 
   // Get parameter name
   let parameterName = "";
-  let nameEl = parseXmlByAttr(element, "value", "name", "parameter_name");
+  let nameEl = parseXmlByAttr(element, "field", "name", "parameter_name_input");
   if (!nameEl)
     return undefined
   nameEl = nameEl[0];
-  
-  let nameTextEl = parseXmlByAttr(nameEl, "field", "name", "TEXT");
-  if (!nameTextEl)
-    return undefined;
-  nameTextEl = nameTextEl[0];
-  parameterName = nameTextEl.textContent;
+  parameterName = nameEl.textContent;
+
+  // let nameTextEl = parseXmlByAttr(nameEl, "field", "name", "TEXT");
+  // if (!nameTextEl)
+  //   return undefined;
+  // nameTextEl = nameTextEl[0];
+  // parameterName = nameTextEl.textContent;
 
   return {
     name: parameterName,
     type: parameterType
   }
+}
+
+function getVisibilityFromElement(element) {
+  let visibilityTypeEl = parseXmlByAttr(element, "field", "name", "element_visibility");
+  if (visibilityTypeEl) {
+    visibilityTypeEl = visibilityTypeEl[0];
+    return visibilityTypeEl.textContent;
+  }
+  return undefined;
 }
 
 function parseMethod(method) {
@@ -72,42 +86,22 @@ function parseMethod(method) {
   }
 
   // Get method name
-  let nameEl = parseXmlByAttr(method, "value", "name", "method_name");
+  let nameEl = parseXmlByAttr(method, "field", "name", "method_name_input");
   if (!nameEl)
-    return undefined; // assign default name that is available [ClassXX]
+    return undefined;
   nameEl = nameEl[0];
 
-  let nameTextEl = parseXmlByAttr(nameEl, "field", "name", "TEXT");
-  if (!nameTextEl)
-    return undefined;
-
-  nameTextEl = nameTextEl[0];
-  let methodName = nameTextEl.textContent;
+  let methodName = nameEl.textContent;
 
   // Get method visibility
-  let methodVisibility = DEFAULT_VISIBILITY;
-  let visibilityEl = parseXmlByAttr(method, "value", "name", "method_visibility");
-  if (visibilityEl) {
-    visibilityEl = visibilityEl[0];
-    
-    let visibilityTypeEl = parseXmlByAttr(visibilityEl, "field", "name", "element_visibility");
-    if (visibilityTypeEl) {
-      visibilityTypeEl = visibilityTypeEl[0];
-      methodVisibility = visibilityTypeEl.textContent;
-    }
-  }
+  const methodVisibility = getVisibilityFromElement(method) ?? DEFAULT_VISIBILITY;
 
   // Get method staticness
   let methodIsStatic = false;
-  let staticnessEl = parseXmlByAttr(method, "value", "name", "is_static");
+  let staticnessEl = parseXmlByAttr(method, "field", "name", "is_static_checkbox");
   if (staticnessEl) {
     staticnessEl = staticnessEl[0];
-    
-    let staticnessBoolEl = parseXmlByAttr(staticnessEl, "field", "name", "BOOL");
-    if (staticnessBoolEl) {
-      staticnessBoolEl = staticnessBoolEl[0];
-      methodIsStatic = staticnessBoolEl.textContent === "TRUE";
-    }
+    methodIsStatic = staticnessEl.textContent === "TRUE";
   }
 
   // Get method parameters
@@ -115,7 +109,7 @@ function parseMethod(method) {
   let parametersEl = parseXmlByAttr(method, "statement", "name", "parameters");
   if (parametersEl) {
     parametersEl = parametersEl[0];
-    
+
     let parameterElements = parseXmlByAttr(parametersEl, "block", "type", "function_parameter");
     parameterElements?.forEach(parameter => {
       const parsedParam = parseParameter(parameter);
@@ -161,42 +155,22 @@ function parseField(field) {
   let fieldType = fieldTypeEl.textContent;
 
   // Get field name
-  let nameEl = parseXmlByAttr(field, "value", "name", "field_name");
+  let nameEl = parseXmlByAttr(field, "field", "name", "field_name_input");
   if (!nameEl)
     return undefined;
   nameEl = nameEl[0];
-    
-  let nameTextEl = parseXmlByAttr(nameEl, "field", "name", "TEXT");
-  if (!nameTextEl)
-    return undefined;
-  nameTextEl = nameTextEl[0];
 
-  let fieldName = nameTextEl.textContent;
+  let fieldName = nameEl.textContent;
 
   // Get field visibility
-  let fieldVisibility = DEFAULT_VISIBILITY;
-  let visibilityEl = parseXmlByAttr(field, "value", "name", "field_visibility");
-  if (visibilityEl) {
-    visibilityEl = visibilityEl[0];
-    
-    let visibilityTypeEl = parseXmlByAttr(visibilityEl, "field", "name", "element_visibility");
-    if (visibilityTypeEl) {
-      visibilityTypeEl = visibilityTypeEl[0];
-      fieldVisibility = visibilityTypeEl.textContent;
-    }
-  }
+  const fieldVisibility = getVisibilityFromElement(field) ?? DEFAULT_VISIBILITY;
 
   // Get field staticness
   let fieldIsStatic = false;
-  let staticnessEl = parseXmlByAttr(field, "value", "name", "is_static");
+  let staticnessEl = parseXmlByAttr(field, "field", "name", "is_static_checkbox");
   if (staticnessEl) {
     staticnessEl = staticnessEl[0];
-    
-    let staticnessBoolEl = parseXmlByAttr(staticnessEl, "field", "name", "BOOL");
-    if (staticnessBoolEl) {
-      staticnessBoolEl = staticnessBoolEl[0];
-      fieldIsStatic = staticnessBoolEl.textContent === "TRUE";
-    }
+    fieldIsStatic = staticnessEl.textContent === "TRUE";
   }
 
   return {
@@ -228,7 +202,7 @@ function parseXmlFields(element) {
 }
 
 
-function parseXmlConnections(element, connectedClassId) {
+function parseXmlConnections(element, connectedClassId, hubId) {
   
   let connectionsEl = parseXmlByAttr(element, "statement", "name", "connections");
   if (!connectionsEl)
@@ -244,16 +218,32 @@ function parseXmlConnections(element, connectedClassId) {
     const connType = parseXmlByAttr(conn, "field", "name", "relationship_type")[0].textContent;
     const connCardinality = parseXmlByAttr(conn, "field", "name", "cardinality_dropdown")[0].textContent;
     const id = conn.attributes.getNamedItem("id").value;
+    let isConnStart = true;
+    let startEl = parseXmlByAttr(conn, "field", "name", "is_start_checkbox");
+    if (startEl) {
+      startEl = startEl[0];
+      isConnStart = startEl.textContent === "TRUE";
+    }
+    
+    let connected_to = parseXmlByAttr(conn, "field", "name", "connected_to");
+    if (!!connected_to) {
+      connected_to = connected_to[0].textContent
+    }
 
+    if (connected_to === connectedClassId)
+      alert("Cannot connect to itself");
+    
     connections.push({
       type: connType,
       cardinality: connCardinality,
       connectedClass: connectedClassId,
-      connectorId: id
+      connectorId: id,
+      hubId: hubId,
+      connection_to: connected_to,
+      isStart: isConnStart
     });
   });
 
-  console.log(connections);
   return connections;
 }
 
@@ -280,8 +270,7 @@ export const parseXMLClasses = (xml) => {
       hub_class = hub_class[0];
 
       const classId = hub_class.attributes.getNamedItem("id").value;
-      // console.log(`hub_class id: ${classId}`);
-
+      const classType = parseXmlClassType(hub_class);
       const name = parseXmlClassName(hub_class);
       const methods = parseXmlMethods(hub_class);
       const fields = parseXmlFields(hub_class);
@@ -291,10 +280,11 @@ export const parseXMLClasses = (xml) => {
         name: name,
         methods: methods,
         fields: fields,
+        classType: classType,
       }
       // console.log(classItem.name);
 
-      const connections = parseXmlConnections(hub, classId);
+      const connections = parseXmlConnections(hub, classId, hubId);
       const connect_hub = {
         hubId: hubId,
         classId: classId,
@@ -312,27 +302,25 @@ export const parseXMLClasses = (xml) => {
   // let allClasses = parseXmlByAttr(xmlDoc, "block", "type", "class");
 
   const registeredClasses = classes.map(cl => cl.id);
-  // console.log(registeredClasses);
-  // console.log(`${allClasses}`);
   // filter out the ones already in map
   allClasses = allClasses.filter(curr => undefined === registeredClasses
                                                         .find(cl => cl === curr.attributes.getNamedItem("id").value));
-  // console.log(`allclassese:`);
-  //   console.log(`${allClasses}`);
+
   // if any classes are left, parse them and add to class list
   allClasses.forEach(element => {
-    let name = parseXmlClassName(element);
-    let methods = parseXmlMethods(element);
-    let fields = parseXmlFields(element);
+    const name = parseXmlClassName(element);
+    const methods = parseXmlMethods(element);
+    const fields = parseXmlFields(element);
+    const classId = element.attributes.getNamedItem("id").value;
 
     let classItem = {
+      id: classId,
       name: name,
       methods: methods,
       fields: fields,
-      connections: undefined
+      connect_hub: undefined
     }
     classes.push(classItem);
-    //console.log(classItem.name);
   });
 
   return classes;

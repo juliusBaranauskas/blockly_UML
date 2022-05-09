@@ -17,18 +17,21 @@ Blockly.JavaScript.scrub_ = function(block, code) {
 
 Blockly.Blocks['class'] = {
   init: function() {
-    this.appendValueInput("classname_joint")
-        .setCheck("String")
-        .appendField("Class name");
-    this.appendStatementInput("methods")
-        .setCheck("class_method")
-        .appendField("Methods");
+    this.appendDummyInput()
+        .appendField("Type")
+        .appendField(new Blockly.FieldDropdown([["Class","CLASS_TYPE"], ["Abstract class","ABSTRACT_TYPE"], ["Interface","INTERFACE_TYPE"]]), "class_type");
+    this.appendDummyInput()
+        .appendField("Name")
+        .appendField(new Blockly.FieldTextInput("MyClass"), "class_name_input");
     this.appendStatementInput("fields")
         .setCheck("class_field")
         .appendField("Fields");
+    this.appendStatementInput("methods")
+        .setCheck("class_method")
+        .appendField("Methods");
     this.setInputsInline(false);
     this.setOutput(true, "class");
-    this.setColour(230);
+    this.setColour(75);
  this.setTooltip("Create a definition of a class/interface");
  this.setHelpUrl("");
   }
@@ -46,24 +49,24 @@ Blockly.JavaScript['class'] = function(block) {
 
 Blockly.Blocks['class_field'] = {
     init: function() {
-      this.appendValueInput("field_name")
-          .setCheck("String")
-          .appendField("Field name");
+      this.appendDummyInput("field_name")
+        .appendField("Field name")
+        .appendField(new Blockly.FieldTextInput("fieldName"), "field_name_input");
       this.appendValueInput("field_type")
           .setCheck("String")
-          .appendField("Field type")
+          .appendField("Type")
           .appendField(new Blockly.FieldDropdown([["custom","custom_type"], ["boolean","bool"], ["string","String"], ["float","float"], ["char","char"], ["int","int"], ["double","double"]]), "field_type")
-          .appendField("(append block if custom)");
-      this.appendValueInput("field_visibility")
-          .setCheck("visibility")
-          .appendField("Visibility");
-      this.appendValueInput("is_static")
-          .setCheck("Boolean")
-          .appendField("Is static (default false)");
+          .appendField("| or custom ->");
+      this.appendDummyInput("element_visibility")
+          .appendField("Visibility")
+          .appendField(new Blockly.FieldDropdown([["public","public"], ["protected","protected"], ["private","private"], ["package","package"]]), "element_visibility");
+      this.appendDummyInput("is_static")
+          .appendField("Is static checkbox")
+          .appendField(new Blockly.FieldCheckbox("FALSE"), "is_static_checkbox");
       this.setInputsInline(false);
       this.setPreviousStatement(true, "class_field");
       this.setNextStatement(true, "class_field");
-      this.setColour(90);
+      this.setColour(150);
    this.setTooltip("Add a field for the class");
    this.setHelpUrl("");
     }
@@ -82,23 +85,23 @@ Blockly.JavaScript['class_field'] = function(block) {
 
 Blockly.Blocks['class_method'] = {
     init: function() {
-      this.appendValueInput("method_name")
-          .setCheck("String")
-          .appendField("Method name");
+      this.appendDummyInput("method_name")
+        .appendField("Method name")
+        .appendField(new Blockly.FieldTextInput("methodName"), "method_name_input");
       this.appendValueInput("method_type")
           .setCheck("String")
-          .appendField("Return type")
+          .appendField("Returns")
           .appendField(new Blockly.FieldDropdown([["custom","custom_type"], ["void","void"], ["boolean","bool"], ["string","String"], ["float","float"], ["char","char"], ["int","int"], ["double","double"]]), "field_type")
-          .appendField("(append block if custom)");
-          this.appendStatementInput("parameters")
+          .appendField("| or custom ->");
+      this.appendStatementInput("parameters")
           .setCheck("function_parameter")
           .appendField("Parameters");
-      this.appendValueInput("method_visibility")
-          .setCheck("visibility")
-          .appendField("Visibility");
-      this.appendValueInput("is_static")
-          .setCheck("Boolean")
-          .appendField("Is static (default false)");
+      this.appendDummyInput("element_visibility")
+          .appendField("Visibility")
+          .appendField(new Blockly.FieldDropdown([["public","public"], ["protected","protected"], ["private","private"], ["package","package"]]), "element_visibility");
+      this.appendDummyInput("is_static")
+          .appendField("Is static checkbox")
+          .appendField(new Blockly.FieldCheckbox("FALSE"), "is_static_checkbox");
       this.setPreviousStatement(true, "class_method");
       this.setNextStatement(true, "class_method");
       this.setColour(10);
@@ -141,14 +144,14 @@ Blockly.JavaScript['visibility'] = function(block) {
 
 Blockly.Blocks['function_parameter'] = {
   init: function() {
-    this.appendValueInput("parameter_name")
-        .setCheck("String")
-        .appendField("Parameter name");
+    this.appendDummyInput("parameter_name")
+        .appendField("Parameter name")
+        .appendField(new Blockly.FieldTextInput("parameterName"), "parameter_name_input");
     this.appendValueInput("parameter_type")
         .setCheck("String")
-        .appendField("Parameter type")
+        .appendField("Type")
         .appendField(new Blockly.FieldDropdown([["custom","custom_type"], ["boolean","bool"], ["string","String"], ["float","float"], ["char","char"], ["int","int"], ["double","double"]]), "parameter_type")
-        .appendField("(append block if custom)");
+        .appendField("| or custom ->");
     this.setPreviousStatement(true, "function_parameter");
     this.setNextStatement(true, "function_parameter");
     this.setColour(180);
@@ -169,7 +172,7 @@ Blockly.JavaScript['function_parameter'] = function(block) {
 Blockly.Blocks['connection_hub'] = {
   init: function() {
     this.appendValueInput("connected_class")
-        .appendField("connection hub")
+        .appendField("HUB")
         .setCheck("class");
     this.appendStatementInput("connections")
         .setCheck("connection");
@@ -187,8 +190,11 @@ Blockly.Blocks['connection'] = {
     this.appendDummyInput()
         .appendField("cardinality")
         .appendField(new Blockly.FieldDropdown([["0..1","ZERO_OR_ONE"], ["1","ONE"], ["*","ANY"], ["1..*","ONE_OR_MORE"]]), "cardinality_dropdown");
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
+    this.appendDummyInput("is start")
+        .appendField("Is start?")
+        .appendField(new Blockly.FieldCheckbox("TRUE"), "is_start_checkbox");
+    this.setPreviousStatement(true, "connection");
+    this.setNextStatement(true, "connection");
     this.setColour(230);
  this.setTooltip("");
  this.setHelpUrl("");
