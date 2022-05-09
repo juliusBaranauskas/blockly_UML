@@ -1,3 +1,7 @@
 .fill-height {
   height: calc(100vh - 114px);
 }
+
+.current-conn-line {
+  z-index: 9999;
+}
