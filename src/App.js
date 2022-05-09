@@ -60,7 +60,6 @@ export default function App() {
   const [javascriptCode, setJavascriptCode] = useState("");
   const [imgSrc, setImgSrc] = useState("");
 
-  const [classId, setClassId] = useState("");
   const [blocklyClasses, setBlocklyClasses] = useState([]);
   const [previousImgString, setPreviousImgString] = useState("");
 
@@ -92,82 +91,14 @@ export default function App() {
     addDynamicDropdownOptions(allClasses);
   }, [blocklyClasses]);
 
-  const handleMouseMove = useCallback((event) => {
-
-    if (1 === 1)
-      return;
-
-    if (!lineElement.current)
-      return;
-
-    event = event || window.event;
-
-    let canvasEl =  document.getElementsByClassName("blocklyBlockCanvas");
-    if (canvasEl || canvasEl.length === 0)
-
-    canvasEl = canvasEl[0];
-    let canvasXY = canvasEl.attributes.getNamedItem("transform").value;
-
-    console.log();
-    let translateString = canvasXY.slice(10)
-    translateString = translateString.slice(0, translateString.indexOf(')'));
-
-    console.log(translateString);
-    let [canvasX, canvasY] = translateString.split(',');
-    canvasX = Number(canvasX);
-    canvasY = Number(canvasY);
-    console.log("canvasX");
-    console.log(canvasX);
-    console.log(canvasY);
-
-    const candidateEls = Array.from(document.getElementsByTagName("g")).filter(el => !!el.attributes.getNamedItem("data-id"));
-    let connectorEl = candidateEls.filter(el => el.attributes.getNamedItem("data-id").value === connectionInfo.connectorId);
-    let hubEl = candidateEls.filter(el => el.attributes.getNamedItem("data-id").value === connectionInfo.hubId);
-
-    if (!connectorEl || !hubEl || connectorEl.length === 0 || hubEl.length === 0)
-      return;
-
-    connectorEl = connectorEl[0];
-    hubEl = hubEl[0];
-
-    console.log("BOUNDING BOX OF CONNECTOR:");
-    console.log(connectorEl.getBoundingClientRect());
-
-    let connXY = connectorEl.attributes.getNamedItem("transform").value;
-    let hubXY = hubEl.attributes.getNamedItem("transform").value;
-
-    let [cx, cy] = connXY.slice(10, -1).split(',');
-    let [hx, hy] = hubXY.slice(10, -1).split(',');
-
-    console.log(cx);
-    console.log(cy);
-    console.log(hx);
-    console.log(hy);
-
-    const offsetConnectorX = 252;
-    const offsetConnectorY = 31;
-
-    let x1 = document.createAttribute("x1"); x1.value = Number(cx) + Number(hx) + canvasX + offsetConnectorX;
-    let y1 = document.createAttribute("y1"); y1.value = Number(cy) + Number(hy) + canvasY + offsetConnectorY;
-    let x2 = document.createAttribute("x2"); x2.value = event.pageX - 5; // offset from mouse so there is lower chance of clicking on the line
-    let y2 = document.createAttribute("y2"); y2.value = event.pageY - 3;
-    lineElement.current.setAttributeNode(x1);
-    lineElement.current.setAttributeNode(y1);
-    lineElement.current.setAttributeNode(x2);
-    lineElement.current.setAttributeNode(y2);
-    console.log("LINE ELEMENT COORDS");
-    console.log(lineElement);
-  }, [lineElement, connectionInfo]);
-
-  useEffect(() => {
-    if (connectionStarted)
-      document.onmousemove = handleMouseMove;
-  }, [handleMouseMove, connectionStarted]);
+  // useEffect(() => {
+  //   if (connectionStarted)
+  //     document.onmousemove = handleMouseMove;
+  // }, [handleMouseMove, connectionStarted]);
 
   const connectorClicked = useCallback((connInfo) => {
 
     if (!connectionStarted) {
-
       // check if connector not already connected
       const existingConnectionIdx = connectionsList.current.findIndex(conn => conn[1][0].connectorId === connInfo.connectorId || conn[1][1].connectorId === connInfo.connectorId);
       if (existingConnectionIdx !== -1) {
@@ -258,7 +189,6 @@ export default function App() {
 
       console.log("CONNECTION CREATED");
     }
-
   }, [connectionStarted, connectedClasses, connectionInfo]);
 
   // const createConnectors = React.useCallback((connInfo) => {
@@ -277,120 +207,6 @@ export default function App() {
   //   });
   // }, []);
 
-  React.useEffect(() => { // might be a useCallback thats called on workspaceDidChange
-    return;
-    if (!xml)
-      return;
-
-    // find all relevant hubs
-    let hubs = blocklyClasses.map(cl => cl.connect_hub).filter(cl => cl !== undefined);
-
-    // flatten connector list
-    let connectors = hubs.flatMap(x => x.connections);
-    
-    // find relevant connector html elements
-    let connector_elements = Array.from(document.getElementsByTagName("g")).filter(el => !!el.attributes.getNamedItem("data-id"));
-    
-    connector_elements = connector_elements.filter(el => connectors.find(conn => conn.connectorId === el.attributes.getNamedItem("data-id").value) !== undefined);
-
-    const beginTime = (new Date()).getTime();
-    connector_elements.forEach(connector_el => {
-      const currentConnId = connector_el.attributes.getNamedItem("data-id").value;
-      if (true /*!document.getElementById(currentConnId)*/) {
-        // <g style="display: block;" transform="translate(200,16)"><path d="M 0 0 h 40 l 15 12.5 l -15 12.5 h -40 Z" fill="#495284" transform="translate(0,2.5)"></path></g>
-
-        // let attrClass = document.createAttribute("class");
-        // attrClass.value = "connector_arrow";
-
-        // remove previously added element for this connector
-        const prevElement = document.getElementById(currentConnId);
-        if (!!prevElement)
-          prevElement.remove();
-
-        // find relevant connector info
-        let conn_info = connectors.find(conn => conn.connectorId === currentConnId);
-        
-        let xTr = 255;
-        let yTr = 16;
-        let attrTransform = document.createAttribute("transform");
-        attrTransform.value = `translate(${xTr},${yTr})`;
-        
-        // fill="#00ff00"
-        let attrFill = document.createAttribute("fill");
-        attrFill.value = "#495284";
-
-        // TODO: replace with class selector in css
-        let attrStyle = document.createAttribute("style");
-        attrStyle.value = "display: block;";
-
-        // stroke="green"
-        // let attrStroke = document.createAttribute("stroke");
-        // attrStroke.value = "green";
-        
-        let attrD = document.createAttribute("d");
-        attrD.value = "M 0 0 h 40 l 15 12.5 l -15 12.5 h -40 Z";
-        
-        let attrId = document.createAttribute("id");
-        attrId.value = currentConnId; // "1234560";
-        
-        const svgns = "http://www.w3.org/2000/svg";
-        const elementG = document.createElementNS(svgns, "g");
-        const elementPath = document.createElementNS(svgns, "path");
-        
-        // elementG.setAttributeNode(attrClass);
-        elementG.setAttributeNode(attrStyle);
-        elementG.setAttributeNode(attrTransform);
-        elementG.setAttributeNode(attrId);
-        
-        let attrTransformPath = document.createAttribute("transform");
-        attrTransformPath.value = `translate(${0},${2.5})`;
-
-        elementPath.setAttributeNode(attrTransformPath);
-        elementPath.setAttributeNode(attrFill);
-        elementPath.setAttributeNode(attrD);
-        //elemen.setAttributeNode(attrStroke);
-
-        elementG.appendChild(elementPath);
-        // connector_el.appendChild(elementG);
-
-        // elementG.onclick = () => {
-        connector_el.onclick = () => {
-          const coninfo = {
-            connectorId: currentConnId,
-            hubId: conn_info.hubId,
-            classId: conn_info.connectedClass,
-            connType: conn_info.type,
-            cardinality: conn_info.cardinality
-          }
-          console.log(`connector clicked:`);
-          console.log(coninfo);
-          connectorClicked(coninfo);
-        };
-      }
-    });
-
-    // console.log(`TIME TOOK TO CREATE CONNECTORS: ${(new Date()).getTime() - beginTime}`);
-
-  }, [xml, blocklyClasses, connectorClicked]);
-
-  React.useMemo(() => {
-    return;
-    if (classId) {
-      // console.log("onclick REGISTERED");
-      let htmlElement = Array.from(document.getElementsByClassName("blocklyDraggable")).filter(el => el.attributes.getNamedItem("data-id").value === classId);
-      if (htmlElement && htmlElement.length === 1) {
-        htmlElement = htmlElement[0];
-        // console.log(htmlElement);
-        htmlElement.onclick = () => {
-          console.log("CLIKCED CLASs");
-        };
-      }
-    }
-    return () => {
-      // unregister onclick handler
-      // htmlElement.onclick = null;
-    }
-  }, [classId]);
 
   const showPlantUMLImg = useCallback((text) => {
     const currentEncodedImg = encoder.encode64(defl.deflate(text, 9));
@@ -517,7 +333,7 @@ export default function App() {
     setBlocklyClasses(jsClasses);
     setJavascriptCode(umlString);
     showPlantUMLImg(umlString);
-  }, [xml, generateUMLForClass, showPlantUMLImg]);
+  }, [xml, showPlantUMLImg, generateConnections]);
 
   const escFunction = useCallback((event) => {
     if (event.keyCode === 27 && connectionStarted) {
@@ -526,6 +342,185 @@ export default function App() {
       setConnectionInfo(undefined);
     }
   }, [connectionStarted]);
+
+  const handleMouseMove = useCallback((event) => {
+    return;
+
+    if (!lineElement.current)
+      return;
+
+    event = event || window.event;
+
+    let canvasEl =  document.getElementsByClassName("blocklyBlockCanvas");
+    if (canvasEl || canvasEl.length === 0)
+
+    canvasEl = canvasEl[0];
+    let canvasXY = canvasEl.attributes.getNamedItem("transform").value;
+
+    console.log();
+    let translateString = canvasXY.slice(10)
+    translateString = translateString.slice(0, translateString.indexOf(')'));
+
+    console.log(translateString);
+    let [canvasX, canvasY] = translateString.split(',');
+    canvasX = Number(canvasX);
+    canvasY = Number(canvasY);
+    console.log("canvasX");
+    console.log(canvasX);
+    console.log(canvasY);
+
+    const candidateEls = Array.from(document.getElementsByTagName("g")).filter(el => !!el.attributes.getNamedItem("data-id"));
+    let connectorEl = candidateEls.filter(el => el.attributes.getNamedItem("data-id").value === connectionInfo.connectorId);
+    let hubEl = candidateEls.filter(el => el.attributes.getNamedItem("data-id").value === connectionInfo.hubId);
+
+    if (!connectorEl || !hubEl || connectorEl.length === 0 || hubEl.length === 0)
+      return;
+
+    connectorEl = connectorEl[0];
+    hubEl = hubEl[0];
+
+    console.log("BOUNDING BOX OF CONNECTOR:");
+    console.log(connectorEl.getBoundingClientRect());
+
+    let connXY = connectorEl.attributes.getNamedItem("transform").value;
+    let hubXY = hubEl.attributes.getNamedItem("transform").value;
+
+    let [cx, cy] = connXY.slice(10, -1).split(',');
+    let [hx, hy] = hubXY.slice(10, -1).split(',');
+
+    console.log(cx);
+    console.log(cy);
+    console.log(hx);
+    console.log(hy);
+
+    const offsetConnectorX = 252;
+    const offsetConnectorY = 31;
+
+    let x1 = document.createAttribute("x1"); x1.value = Number(cx) + Number(hx) + canvasX + offsetConnectorX;
+    let y1 = document.createAttribute("y1"); y1.value = Number(cy) + Number(hy) + canvasY + offsetConnectorY;
+    let x2 = document.createAttribute("x2"); x2.value = event.pageX - 5; // offset from mouse so there is lower chance of clicking on the line
+    let y2 = document.createAttribute("y2"); y2.value = event.pageY - 3;
+    lineElement.current.setAttributeNode(x1);
+    lineElement.current.setAttributeNode(y1);
+    lineElement.current.setAttributeNode(x2);
+    lineElement.current.setAttributeNode(y2);
+    console.log("LINE ELEMENT COORDS");
+    console.log(lineElement);
+  }, [lineElement, connectionInfo]);
+
+  React.useEffect(() => { // might be a useCallback thats called on workspaceDidChange
+    return;
+    if (!xml)
+      return;
+
+    // find all relevant hubs
+    let hubs = blocklyClasses.map(cl => cl.connect_hub).filter(cl => cl !== undefined);
+
+    // flatten connector list
+    let connectors = hubs.flatMap(x => x.connections);
+    
+    // find relevant connector html elements
+    let connector_elements = Array.from(document.getElementsByTagName("g")).filter(el => !!el.attributes.getNamedItem("data-id"));
+    
+    connector_elements = connector_elements.filter(el => connectors.find(conn => conn.connectorId === el.attributes.getNamedItem("data-id").value) !== undefined);
+
+    const beginTime = (new Date()).getTime();
+    connector_elements.forEach(connector_el => {
+      const currentConnId = connector_el.attributes.getNamedItem("data-id").value;
+      if (true /*!document.getElementById(currentConnId)*/) {
+        // <g style="display: block;" transform="translate(200,16)"><path d="M 0 0 h 40 l 15 12.5 l -15 12.5 h -40 Z" fill="#495284" transform="translate(0,2.5)"></path></g>
+
+        // let attrClass = document.createAttribute("class");
+        // attrClass.value = "connector_arrow";
+
+        // remove previously added element for this connector
+        const prevElement = document.getElementById(currentConnId);
+        if (!!prevElement)
+          prevElement.remove();
+
+        // find relevant connector info
+        let conn_info = connectors.find(conn => conn.connectorId === currentConnId);
+        
+        let xTr = 255;
+        let yTr = 16;
+        let attrTransform = document.createAttribute("transform");
+        attrTransform.value = `translate(${xTr},${yTr})`;
+        
+        // fill="#00ff00"
+        let attrFill = document.createAttribute("fill");
+        attrFill.value = "#495284";
+
+        // TODO: replace with class selector in css
+        let attrStyle = document.createAttribute("style");
+        attrStyle.value = "display: block;";
+
+        // stroke="green"
+        // let attrStroke = document.createAttribute("stroke");
+        // attrStroke.value = "green";
+        
+        let attrD = document.createAttribute("d");
+        attrD.value = "M 0 0 h 40 l 15 12.5 l -15 12.5 h -40 Z";
+        
+        let attrId = document.createAttribute("id");
+        attrId.value = currentConnId; // "1234560";
+        
+        const svgns = "http://www.w3.org/2000/svg";
+        const elementG = document.createElementNS(svgns, "g");
+        const elementPath = document.createElementNS(svgns, "path");
+        
+        // elementG.setAttributeNode(attrClass);
+        elementG.setAttributeNode(attrStyle);
+        elementG.setAttributeNode(attrTransform);
+        elementG.setAttributeNode(attrId);
+        
+        let attrTransformPath = document.createAttribute("transform");
+        attrTransformPath.value = `translate(${0},${2.5})`;
+
+        elementPath.setAttributeNode(attrTransformPath);
+        elementPath.setAttributeNode(attrFill);
+        elementPath.setAttributeNode(attrD);
+        //elemen.setAttributeNode(attrStroke);
+
+        elementG.appendChild(elementPath);
+        // connector_el.appendChild(elementG);
+
+        // elementG.onclick = () => {
+        connector_el.onclick = () => {
+          const coninfo = {
+            connectorId: currentConnId,
+            hubId: conn_info.hubId,
+            classId: conn_info.connectedClass,
+            connType: conn_info.type,
+            cardinality: conn_info.cardinality
+          }
+          console.log(`connector clicked:`);
+          console.log(coninfo);
+          connectorClicked(coninfo);
+        };
+      }
+    });
+    // console.log(`TIME TOOK TO CREATE CONNECTORS: ${(new Date()).getTime() - beginTime}`);
+
+  }, [xml, blocklyClasses, connectorClicked]);
+
+  React.useMemo(() => {
+    return;
+    // if (classId) {
+    //   // console.log("onclick REGISTERED");
+    //   let htmlElement = Array.from(document.getElementsByClassName("blocklyDraggable")).filter(el => el.attributes.getNamedItem("data-id").value === classId);
+    //   if (htmlElement && htmlElement.length === 1) {
+    //     htmlElement = htmlElement[0];
+    //     // console.log(htmlElement);
+    //     htmlElement.onclick = () => {
+    //       console.log("CLIKCED CLASs");
+    //     };
+    //   }
+    // }
+    // return () => {
+    //   // unregister onclick handler
+    //   // htmlElement.onclick = null;
+    // }
+  }, []);
 
   useEffect(() => {
     return;
@@ -590,12 +585,7 @@ export default function App() {
       generateUml();
       drawLine();
     }
-  }, [generateUml, xml]);
-
-  useEffect(() => {
-    console.log("connectedClasses");
-    console.log(connectedClasses);
-  }, [connectedClasses]);
+  }, [generateUml, xml, drawLine]);
 
   return (
     <>
