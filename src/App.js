@@ -13,8 +13,8 @@ import { generateUMLForClass, getConnectionUMLString } from "./UML_DSL_Generator
 import PF from "pathfinding";
 import { checkDuplicateConnections, filterDuplConnections } from "./Validator";
 
-const encoder = require("./encoder.js");
-const defl = require("./deflate.js");
+const encoder = require("./helpers/encoder.js");
+const defl = require("./helpers/deflate.js");
 
 const dynamicDropdownOptions_ = [];
 const addDynamicDropdownOptions = (options) => {
