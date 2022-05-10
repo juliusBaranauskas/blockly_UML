@@ -13,6 +13,17 @@ function parseXmlByAttr(element, tagName, attrName, attrValue) {
   return el;
 }
 
+function parseXmlChildByAttr(element, tagName, attrName, attrValue) {
+  if (!tagName || !attrName || !attrValue)
+    return undefined;
+
+  let el = Array.from(element.childNodes)?.filter(el => el.nodeName === tagName && el.attributes.getNamedItem(attrName).value === attrValue);
+  if (!el || el.length === 0)
+    return undefined;
+
+  return el;
+}
+
 function parseXmlClassType(element) {
   let typeEl = parseXmlByAttr(element, "field", "name", "class_type");
   if (!typeEl)
@@ -106,7 +117,7 @@ function parseMethod(method) {
 
   // Get method parameters
   let parameters = [];
-  let parametersEl = parseXmlByAttr(method, "statement", "name", "parameters");
+  let parametersEl = parseXmlChildByAttr(method, "statement", "name", "parameters");
   if (parametersEl) {
     parametersEl = parametersEl[0];
 
@@ -132,18 +143,18 @@ function parseXmlMethods(element) {
   if (!methodsBlockEl)
     return []; // assign default name that is available [ClassXX]
   methodsBlockEl = methodsBlockEl[0];
-  
+
   let methods = parseXmlByAttr(methodsBlockEl, "block", "type", "class_method");
   if (!methods || methods.length === 0)
     return []; // assign default name that is available [ClassXX]
-  
+
   let resultMethods = [];
   methods.forEach(method => {
     const parsedMethod = parseMethod(method);
     if (parsedMethod)
       resultMethods.push(parsedMethod);
   });
-  
+
   return resultMethods;
 }
 

@@ -253,10 +253,8 @@ export default function App() {
 
   const generateUml = useCallback(() => {
 
-    // let parser = new DOMParser();
-    // let xmlDoc = parser.parseFromString(xml, "text/xml");
-
     const jsClasses = parseXMLClasses(xml);
+    console.log("jsClasses:");
     console.log(jsClasses);
 
     let umlString = "";
