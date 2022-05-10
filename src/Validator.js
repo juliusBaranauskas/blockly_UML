@@ -89,10 +89,12 @@ export const validateClass = (cl) => {
   // check if there are no duplicate method definitions
   const methods = new Set();
   cl.methods.forEach(method => {
-    if (methods.has(method.name)) {
+    const paramsString = !!method.parameters && method.parameters.length > 0 ? method.parameters?.reduce((accum, param) => `${accum}.${param.type}`, "") : "";
+    const methodKey = `${method.name}.${paramsString}`;
+    if (methods.has(methodKey)) {
       warnings.duplicateMethods.add(method.name);
     } else {
-      methods.add(method.name);
+      methods.add(methodKey);
     }
   });
 
