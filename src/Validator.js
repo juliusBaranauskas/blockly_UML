@@ -51,3 +51,52 @@ export const filterDuplConnections = (connections) => {
   }
   return [...confirmedConns.values()];
 }
+
+/*
+  FIELD {
+    name:
+    returnType:
+    visibility:
+    isStatic: 
+  }
+
+  METHOD {
+    name:
+    returnType:
+    visibility:
+    parameters:
+    isStatic: 
+  }
+*/
+
+export const validateClass = (cl) => {
+  const warnings = {
+    duplicateFields: new Set(),
+    duplicateMethods: new Set(),
+
+  };
+
+  // check if there are no duplicate fields
+  const fields = new Set();
+  cl.fields.forEach(field => {
+    if (fields.has(field.name)) {
+      warnings.duplicateFields.add(field.name);
+    } else {
+      fields.add(field.name);
+    }
+  });
+
+  // check if there are no duplicate method definitions
+  const methods = new Set();
+  cl.methods.forEach(method => {
+    const paramsString = !!method.parameters && method.parameters.length > 0 ? method.parameters?.reduce((accum, param) => `${accum}.${param.type}`, "") : "";
+    const methodKey = `${method.name}.${paramsString}`;
+    if (methods.has(methodKey)) {
+      warnings.duplicateMethods.add(method.name);
+    } else {
+      methods.add(methodKey);
+    }
+  });
+
+  return warnings;
+}

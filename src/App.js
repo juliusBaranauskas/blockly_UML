@@ -11,7 +11,7 @@ import { toolboxCategories } from "./customBlocks/toolbox";
 import { generateUMLForClass, getConnectionUMLString } from "./UML_DSL_Generator";
 
 import PF from "pathfinding";
-import { checkDuplicateConnections, filterDuplConnections } from "./Validator";
+import { checkDuplicateConnections, filterDuplConnections, validateClass } from "./Validator";
 
 const encoder = require("./helpers/encoder.js");
 const defl = require("./helpers/deflate.js");
@@ -20,8 +20,6 @@ const dynamicDropdownOptions_ = [];
 const addDynamicDropdownOptions = (options) => {
 
   dynamicDropdownOptions_.splice(0, dynamicDropdownOptions_.length);
-  console.log("options");
-  console.log(options);
   options.forEach(option => dynamicDropdownOptions_.push(option));
 };
 
@@ -255,10 +253,8 @@ export default function App() {
 
   const generateUml = useCallback(() => {
 
-    // let parser = new DOMParser();
-    // let xmlDoc = parser.parseFromString(xml, "text/xml");
-
     const jsClasses = parseXMLClasses(xml);
+    console.log("jsClasses:");
     console.log(jsClasses);
 
     let umlString = "";
@@ -329,6 +325,11 @@ export default function App() {
     umlString += getConnectionUMLString(filteredConns, classDefs);
 
     generateConnections(jsClasses);
+
+    classDefs.forEach(cl => {
+      const res = validateClass(cl)
+      console.log(res);
+    });
 
     setBlocklyClasses(jsClasses);
     setJavascriptCode(umlString);
