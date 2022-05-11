@@ -12,6 +12,23 @@ import { generateUMLForClass, getConnectionUMLString } from "./UML_DSL_Generator
 
 import PF from "pathfinding";
 import { checkDuplicateConnections, filterDuplConnections, validateClass } from "./Validator";
+import Modal from "react-modal";
+import WarningItem from "./WarningItem";
+
+const customStyles = {
+  content: {
+    top: '50%',
+    left: '50%',
+    right: 'auto',
+    bottom: 'auto',
+    marginRight: '-50%',
+    transform: 'translate(-50%, -50%)',
+    maxWidth: '40%',
+    minWidth: '20%'
+  },
+}
+
+const warnings = []
 
 const encoder = require("./helpers/encoder.js");
 const defl = require("./helpers/deflate.js");
@@ -64,6 +81,8 @@ export default function App() {
   const [connectionStarted, setConnectionStarted] = useState(false);
   const [connectionInfo, setConnectionInfo] = useState(undefined);
   const [connectedClasses, setConnectedClasses] = useState([]);
+
+  const [warningWndOpen, setWarningWndOpen] = useState(false);
 
   // [ [classId, classId], [connInfo, connInfo] ]
   const connectionsList = useRef([]); // : [ [len = 2], [len = 2] ]
@@ -235,8 +254,6 @@ export default function App() {
     console.log("Connections:");
     console.log(conns);
 
-    // flatten connections and build some kind of list that doesnt have multiple definitions of the same connection
-
     // make it possible to traverse connections
 
     /* {
@@ -326,9 +343,16 @@ export default function App() {
 
     generateConnections(jsClasses);
 
+    warnings.splice(0, warnings.length)
     classDefs.forEach(cl => {
       const res = validateClass(cl)
       console.log(res);
+      res.duplicateFields.forEach(f => {
+        warnings.push({ type: "error", text: `There are multiple fields named ${f} in a class ${cl.name}` });
+      });
+      res.duplicateMethods.forEach(m => {
+        warnings.push({ type: "error", text: `There are duplicate methods named ${m} in a class ${cl.name}` });
+      });
     });
 
     setBlocklyClasses(jsClasses);
@@ -616,7 +640,26 @@ export default function App() {
       <button onClick={generateUml}>
         Generate
       </button>
+      <button onClick={() => setWarningWndOpen(true)}>
+        Validate
+      </button>
       <img alt={""} src={imgSrc} />
+
+      <Modal
+        isOpen={warningWndOpen}
+        onRequestClose={() => setWarningWndOpen(false)}
+        style={customStyles}
+        contentLabel="Warning list modal"
+        shouldCloseOnEsc={true}
+        shouldCloseOnOverlayClick={true}
+      >
+        <h2>Warnings</h2>
+        {warnings.length > 0
+          ? warnings.map(w => <WarningItem text={w.text} />)
+          : <WarningItem text={"0 warnings found :)"} />
+        }
+        <button className="modalCloseBtn" onClick={() => setWarningWndOpen(false)}>close</button>
+      </Modal>
     </>
   );
 }
