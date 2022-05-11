@@ -655,7 +655,7 @@ export default function App() {
       >
         <h2>Warnings</h2>
         {warnings.length > 0
-          ? warnings.map(w => <WarningItem text={w.text} />)
+          ? warnings.map(w => <WarningItem text={w.text} type={w.type}/>)
           : <WarningItem text={"0 warnings found :)"} />
         }
         <button className="modalCloseBtn" onClick={() => setWarningWndOpen(false)}>close</button>

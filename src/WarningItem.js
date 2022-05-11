@@ -4,7 +4,7 @@ const WarningItem = (props) => {
   // TODO: add error/warning icon on the right or left of text
   return (
     <div className="warning">
-      <span>{props.text}</span>
+      <span title={!!props.type ? `This is ${props.type}` : ""}>{props.text}</span>
     </div>
   );
 }
