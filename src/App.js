@@ -72,7 +72,7 @@ Blockly.Blocks['connection'] = {
 
 export default function App() {
   const [xml, setXml] = useState("");
-  const [javascriptCode, setJavascriptCode] = useState("");
+  const [plantUMLText, setPlantUMLText] = useState("");
   const [imgSrc, setImgSrc] = useState("");
 
   const [blocklyClasses, setBlocklyClasses] = useState([]);
@@ -238,23 +238,57 @@ export default function App() {
     }, 1000);
   }, [previousImgString]);
 
-  const generateConnections = useCallback((connInfo) => {
-    const conns = connInfo.map(conn => {
+  const isInheritanceRelationship = (connectionType) => {
+    switch (connectionType) {
+      case "GENERALIZATION":
+      case "REALIZATION":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  const addParents = (classes, conns) => {
+    return classes.map(cl => {
+      const parentsIds = conns.filter(conn => conn.classBegin.id === cl.id && isInheritanceRelationship(conn.type)).map(conn => conn.classEnd.id);
+      console.log("parentsIds");
+      console.log(parentsIds);
+      const parentClasses = classes.filter(cls => parentsIds?.includes(cls.id));
       return {
-        classId: conn.connect_hub?.classId,
-        classType: conn.classType,
-        connections: conn.connect_hub?.connections.map(conn => {
-          return {
-            type: conn.type,
-            connectedTo: conn.connection_to,
-          }
-        })
+        ...cl,
+        parentClasses
       }
     });
-    console.log("Connections:");
-    console.log(conns);
+  }
 
-    // make it possible to traverse connections
+  const getInheritedFields = (cl, conns) => {
+    if (cl.inheritedFields !== undefined) {
+      return cl.inheritedFields;
+    }
+
+    const parents = cl.parents;
+    cl.inheritedFields = parents?.flat(parent => {
+      return getInheritedFields(parent, conns);
+    }) ?? [];
+  }
+
+  const getInheritedMethods = (cl, conns) => {
+    if (cl.inheritedMethods !== undefined) {
+      return cl.inheritedMethods;
+    }
+
+    const parents = cl.parents;
+    cl.inheritedMethods = parents?.flat(parent => {
+      return getInheritedMethods(parent, conns);
+    }) ?? [];
+  }
+
+  const addInheritted = (classes, conns) => {
+
+    classes.forEach(cl => {
+      cl["inheritedFields"] = getInheritedFields(cl, conns);
+      cl["inheritedMethods"] = getInheritedMethods(cl, conns);
+    });
 
     /* {
       type: connType,
@@ -266,7 +300,7 @@ export default function App() {
     }; */
 
     // <path xmlns="http://www.w3.org/2000/svg" stroke="black" transform="translate(1000,300)" d=" M 0 0 L 255 108 L 375 -95" fill="none"></path>
-  }, []);
+  }
 
   const generateUml = useCallback(() => {
 
@@ -341,7 +375,12 @@ export default function App() {
 
     umlString += getConnectionUMLString(filteredConns, classDefs);
 
-    generateConnections(jsClasses);
+    // generateConnections(jsClasses);
+
+    const classesWithParents = addParents(jsClasses, filteredConns);
+    addInheritted(classesWithParents, filteredConns);
+    console.log("Clases with parants");
+    console.log(classesWithParents);
 
     warnings.splice(0, warnings.length)
     classDefs.forEach(cl => {
@@ -356,9 +395,9 @@ export default function App() {
     });
 
     setBlocklyClasses(jsClasses);
-    setJavascriptCode(umlString);
+    setPlantUMLText(umlString);
     showPlantUMLImg(umlString);
-  }, [xml, showPlantUMLImg, generateConnections]);
+  }, [xml, showPlantUMLImg]);
 
   const escFunction = useCallback((event) => {
     if (event.keyCode === 27 && connectionStarted) {
@@ -634,7 +673,7 @@ export default function App() {
       <textarea
         id="code"
         style={{ height: "200px", width: "400px" }}
-        value={javascriptCode}
+        value={plantUMLText}
         readOnly
       />
       <button onClick={generateUml}>
