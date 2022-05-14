@@ -100,3 +100,140 @@ export const validateClass = (cl) => {
 
   return warnings;
 }
+
+
+export class Validator {
+  
+  constructor(classes, conns) {
+    this._classes = classes;
+    this._connections = conns;
+  }
+
+  static isInheritanceRelationship(connectionType) {
+    switch (connectionType) {
+      case "GENERALIZATION":
+      case "REALIZATION":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  getClasses() {
+    return this._classes;
+  }
+
+  addParents() {
+    this._classes = this._classes.map(cl => {
+      const parentsIds = this._connections.filter(conn => conn.classBegin.id === cl.id && Validator.isInheritanceRelationship(conn.type)).map(conn => conn.classEnd.id);
+      console.log("parentsIds");
+      console.log(parentsIds);
+      const parentClasses = this._classes.filter(cls => parentsIds?.includes(cls.id)).map(cl => cl.id);
+      return {
+        ...cl,
+        parentClasses
+      }
+    });
+  }
+
+  /**
+   * 
+   * @param {ClassDef} cl Class to retrieve inherited fields for
+   * @param {Array<Connection>} conns List of class connections
+   * @param {Set<string>} classesVisited Previously visited classes to break the cycle if there's a cyclic dep
+   * @returns fields inherited by class
+   */
+  getInheritedFields(cl, classesVisited) {
+    
+    if (classesVisited.has(cl.id)) {
+      // break the cycle - cycle of dependencies detected
+      return undefined;
+    }
+
+    classesVisited.add(cl.id);
+    if (cl.inheritedFields !== undefined) {
+      return cl.inheritedFields;
+    }
+
+    const parents = cl.parentClasses.map(prnt => this._classes.find(cls => cls.id === prnt));
+    cl.inheritedFields = parents?.flatMap(parent => {
+      const inhFields = this.getInheritedFields(parent, classesVisited);
+      return [...(inhFields || []), ...(parent.fields || [])];
+    }) ?? [];
+    return cl.inheritedFields;
+  }
+
+  getInheritedMethods(cl) {
+    if (cl.inheritedMethods !== undefined) {
+      return cl.inheritedMethods;
+    }
+
+    const parents = cl.parentClasses.map(prnt => this._classes.find(cls => cls.id === prnt));
+    cl.inheritedMethods = parents?.flatMap(parent => {
+      const inhMethods = this.getInheritedMethods(parent);
+      return [...(inhMethods || []), ...(parent.methods || [])];
+    }) ?? [];
+    return cl.inheritedMethods;
+  }
+
+  addInheritted() {
+
+    this._classes.forEach(cl => {
+      cl["inheritedFields"] = this.getInheritedFields(cl, new Set());
+      cl["inheritedMethods"] = this.getInheritedMethods(cl, new Set());
+    });
+
+    /* {
+      type: connType,
+      cardinality: connCardinality,
+      connectedClass: connectedClassId,
+      connectorId: id,
+      hubId: hubId,
+      connection_to: connected_to,
+    }; */
+
+    // <path xmlns="http://www.w3.org/2000/svg" stroke="black" transform="translate(1000,300)" d=" M 0 0 L 255 108 L 375 -95" fill="none"></path>
+  }
+
+  checkDuplicateFields(cl) {
+    const warnings = [];
+    const fields = new Set();
+
+    cl.fields.forEach(field => fields.add(field.name));
+
+    cl.inheritedFields?.forEach(field => {
+      if (fields.has(field.name)) {
+        warnings.push(`Class cannot inherit fields with non-unique names. At class <${cl.name}> and field <${field.name}>`);
+        return;
+      }
+
+      fields.add(field.name);
+    })
+
+    return warnings;
+  }
+
+  checkDuplicateMethods(cl) {
+    const warnings = [];
+    const methods = new Set();
+
+    cl.methods.forEach(method => {
+      const paramsString = !!method.parameters && method.parameters.length > 0 ? method.parameters?.reduce((accum, param) => `${accum}.${param.type}`, "") : "";
+      const methodKey = `${method.name}.${paramsString}`;
+      methods.add(methodKey);
+    });
+
+    cl.inheritedMethods?.forEach(method => {
+      const paramsString = !!method.parameters && method.parameters.length > 0 ? method.parameters?.reduce((accum, param) => `${accum}.${param.type}`, "") : "";
+      const methodKey = `${method.name}.${paramsString}`;
+      if (methods.has(methodKey)) {
+        warnings.push(`Class cannot inherit methods with non-unique name and parameter list combination. At class <${cl.name}> and method <${method.name}> with parameters <${paramsString}>`);
+        return;
+      }
+
+      methods.add(methodKey);
+    })
+    
+    return warnings;
+  }
+}

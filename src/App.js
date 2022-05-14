@@ -11,7 +11,7 @@ import { toolboxCategories } from "./customBlocks/toolbox";
 import { generateUMLForClass, getConnectionUMLString } from "./UML_DSL_Generator";
 
 import PF from "pathfinding";
-import { checkDuplicateConnections, filterDuplConnections, validateClass } from "./Validator";
+import { checkDuplicateConnections, filterDuplConnections, validateClass, Validator } from "./Validator";
 import Modal from "react-modal";
 import WarningItem from "./WarningItem";
 
@@ -88,6 +88,8 @@ export default function App() {
   const connectionsList = useRef([]); // : [ [len = 2], [len = 2] ]
 
   const lastFuncId = React.useRef(undefined);
+  const lastGenerateFuncId = React.useRef(undefined);
+
   const lineElement = React.useRef(undefined);
 
   // const dynamicOptions = useCallback(() => {
@@ -238,69 +240,7 @@ export default function App() {
     }, 1000);
   }, [previousImgString]);
 
-  const isInheritanceRelationship = (connectionType) => {
-    switch (connectionType) {
-      case "GENERALIZATION":
-      case "REALIZATION":
-        return true;
-      default:
-        return false;
-    }
-  }
 
-  const addParents = (classes, conns) => {
-    return classes.map(cl => {
-      const parentsIds = conns.filter(conn => conn.classBegin.id === cl.id && isInheritanceRelationship(conn.type)).map(conn => conn.classEnd.id);
-      console.log("parentsIds");
-      console.log(parentsIds);
-      const parentClasses = classes.filter(cls => parentsIds?.includes(cls.id));
-      return {
-        ...cl,
-        parentClasses
-      }
-    });
-  }
-
-  const getInheritedFields = (cl, conns) => {
-    if (cl.inheritedFields !== undefined) {
-      return cl.inheritedFields;
-    }
-
-    const parents = cl.parents;
-    cl.inheritedFields = parents?.flat(parent => {
-      return getInheritedFields(parent, conns);
-    }) ?? [];
-  }
-
-  const getInheritedMethods = (cl, conns) => {
-    if (cl.inheritedMethods !== undefined) {
-      return cl.inheritedMethods;
-    }
-
-    const parents = cl.parents;
-    cl.inheritedMethods = parents?.flat(parent => {
-      return getInheritedMethods(parent, conns);
-    }) ?? [];
-  }
-
-  const addInheritted = (classes, conns) => {
-
-    classes.forEach(cl => {
-      cl["inheritedFields"] = getInheritedFields(cl, conns);
-      cl["inheritedMethods"] = getInheritedMethods(cl, conns);
-    });
-
-    /* {
-      type: connType,
-      cardinality: connCardinality,
-      connectedClass: connectedClassId,
-      connectorId: id,
-      hubId: hubId,
-      connection_to: connected_to,
-    }; */
-
-    // <path xmlns="http://www.w3.org/2000/svg" stroke="black" transform="translate(1000,300)" d=" M 0 0 L 255 108 L 375 -95" fill="none"></path>
-  }
 
   const generateUml = useCallback(() => {
 
@@ -375,14 +315,24 @@ export default function App() {
 
     umlString += getConnectionUMLString(filteredConns, classDefs);
 
-    // generateConnections(jsClasses);
+    warnings.splice(0, warnings.length)
+    const validator = new Validator(jsClasses, filteredConns);
 
-    const classesWithParents = addParents(jsClasses, filteredConns);
-    addInheritted(classesWithParents, filteredConns);
+    validator.addParents();
+    validator.addInheritted();
+    const classesWithParents = validator.getClasses();
+
+    classesWithParents.forEach(cl => {
+      const duplFieldsWarns = validator.checkDuplicateFields(cl);
+      duplFieldsWarns.forEach(warn => warnings.push({ type: "error", text: warn }));
+      
+      const duplMethodsWarns = validator.checkDuplicateMethods(cl);
+      duplMethodsWarns.forEach(warn => warnings.push({ type: "error", text: warn }));
+    });
+
     console.log("Clases with parants");
     console.log(classesWithParents);
 
-    warnings.splice(0, warnings.length)
     classDefs.forEach(cl => {
       const res = validateClass(cl)
       console.log(res);
@@ -644,12 +594,15 @@ export default function App() {
     // const code = Blockly.JavaScript.workspaceToCode(workspace);
     // setJavascriptCode(code);
 
-    if (xml !== lastXML.current) {
-      lastXML.current = xml;
-      generateUml();
-      drawLine();
-    }
-  }, [generateUml, xml, drawLine]);
+    clearTimeout(lastGenerateFuncId.current);
+
+    lastGenerateFuncId.current = setTimeout(() => {
+      if (xml !== lastXML.current) {
+        lastXML.current = xml;
+        generateUml();
+      }
+    }, 1000);
+  }, [generateUml, xml]);
 
   return (
     <>
