@@ -163,14 +163,20 @@ export class Validator {
     return cl.inheritedFields;
   }
 
-  getInheritedMethods(cl) {
+  getInheritedMethods(cl, classesVisited) {
+    if (classesVisited.has(cl.id)) {
+      // break the cycle - cycle of dependencies detected
+      return undefined;
+    }
+
+    classesVisited.add(cl.id);
     if (cl.inheritedMethods !== undefined) {
       return cl.inheritedMethods;
     }
 
     const parents = cl.parentClasses.map(prnt => this._classes.find(cls => cls.id === prnt));
     cl.inheritedMethods = parents?.flatMap(parent => {
-      const inhMethods = this.getInheritedMethods(parent);
+      const inhMethods = this.getInheritedMethods(parent, classesVisited);
       return [...(inhMethods || []), ...(parent.methods || [])];
     }) ?? [];
     return cl.inheritedMethods;
