@@ -258,7 +258,7 @@ export class Validator {
           const endClass = this._classes.find(c => c.id === conn.classEnd.id);
           const beginClass = this._classes.find(c => c.id === conn.classBegin.id);
           if (endClass.classType !==  beginClass.classType) {
-            warnings.push(`Generalization relationship cannot have different model element types. Either change the type of  either of <${endClass.name}> or <${beginClass.name}> or change the relationship type between them`);
+            warnings.push(`Generalization relationship cannot have different model element types. Either change the type of <${endClass.name}> or <${beginClass.name}> or change the relationship type between them`);
           }
           break;
         case "COMPOSITION":
@@ -267,6 +267,16 @@ export class Validator {
           break;
         default:
           break;
+      }
+    });
+    return warnings;
+  }
+
+  validateInterfaces() {
+    const warnings = [];
+    this._classes.forEach(cl => {
+      if (cl.classType === "INTERFACE_TYPE" && cl.fields.length !== 0) {
+        warnings.push(`Interfaces cannot have fields. Either change the type of <${cl.name}> to class or abstract class or remove all of it's fields`);
       }
     });
     return warnings;

@@ -37,6 +37,7 @@ const dynamicDropdownOptions_ = [];
 const addDynamicDropdownOptions = (options) => {
 
   dynamicDropdownOptions_.splice(0, dynamicDropdownOptions_.length);
+  dynamicDropdownOptions_.push(['<not selected>', 'OPTION-1']);
   options.forEach(option => dynamicDropdownOptions_.push(option));
 };
 
@@ -217,6 +218,9 @@ export default function App() {
 
     const connectionWarnings = validator.validateConnectionTypes();
     connectionWarnings.forEach(warn => warnings.push({ type: "warning", text: warn }));
+
+    const interfaceWarnings = validator.validateInterfaces();
+    interfaceWarnings.forEach(warn => warnings.push({ type: "error", text: warn }));
 
     setBlocklyClasses(jsClasses);
     setPlantUMLText(umlString);
