@@ -242,4 +242,33 @@ export class Validator {
     
     return warnings;
   }
+
+  validateConnectionTypes() {
+    const warnings = [];
+    this._connections.forEach(conn => {
+      switch (conn.type) {
+        case "REALIZATION":
+          const cls = this._classes.find(c => c.id === conn.classEnd.id);
+          if (cls.classType !== "INTERFACE_TYPE" && cls.classType !== "ABSTRACT_TYPE") {
+            const beginClass = this._classes.find(c => c.id === conn.classBegin.id);
+            warnings.push(`Realization relationship cannot end with non-abstract model element type. Either change the type of <${cls.name}> or change the relationship type between it and <${beginClass.name}>`);
+          }
+          break;
+        case "GENERALIZATION":
+          const endClass = this._classes.find(c => c.id === conn.classEnd.id);
+          const beginClass = this._classes.find(c => c.id === conn.classBegin.id);
+          if (endClass.classType !==  beginClass.classType) {
+            warnings.push(`Generalization relationship cannot have different model element types. Either change the type of  either of <${endClass.name}> or <${beginClass.name}> or change the relationship type between them`);
+          }
+          break;
+        case "COMPOSITION":
+          break;
+        case "AGGREGATION":
+          break;
+        default:
+          break;
+      }
+    });
+    return warnings;
+  }
 }

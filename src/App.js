@@ -23,7 +23,7 @@ const customStyles = {
     bottom: 'auto',
     marginRight: '-50%',
     transform: 'translate(-50%, -50%)',
-    maxWidth: '40%',
+    maxWidth: '50%',
     minWidth: '20%'
   },
 }
@@ -214,6 +214,9 @@ export default function App() {
         warnings.push({ type: "error", text: `There are duplicate methods named ${m} in a class ${cl.name}` });
       });
     });
+
+    const connectionWarnings = validator.validateConnectionTypes();
+    connectionWarnings.forEach(warn => warnings.push({ type: "warning", text: warn }));
 
     setBlocklyClasses(jsClasses);
     setPlantUMLText(umlString);
