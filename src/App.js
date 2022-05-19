@@ -28,8 +28,6 @@ const customStyles = {
   },
 }
 
-const warnings = []
-
 const encoder = require("./helpers/encoder.js");
 const defl = require("./helpers/deflate.js");
 
@@ -84,6 +82,7 @@ export default function App() {
   // const [connectedClasses, setConnectedClasses] = useState([]);
 
   const [warningWndOpen, setWarningWndOpen] = useState(false);
+  const [warnings, setWarnings] = useState([]);
 
   // [ [classId, classId], [connInfo, connInfo] ]
   // const connectionsList = useRef([]); // : [ [len = 2], [len = 2] ]
@@ -187,7 +186,7 @@ export default function App() {
 
     umlString += getConnectionUMLString(filteredConns, classDefs);
 
-    warnings.splice(0, warnings.length)
+    const warns = [];
     const validator = new Validator(jsClasses, filteredConns);
 
     validator.addParents();
@@ -196,10 +195,10 @@ export default function App() {
 
     classesWithParents.forEach(cl => {
       const duplFieldsWarns = validator.checkDuplicateFields(cl);
-      duplFieldsWarns.forEach(warn => warnings.push({ type: "error", text: warn }));
+      duplFieldsWarns.forEach(warn => warns.push({ type: "error", text: warn }));
       
       const duplMethodsWarns = validator.checkDuplicateMethods(cl);
-      duplMethodsWarns.forEach(warn => warnings.push({ type: "error", text: warn }));
+      duplMethodsWarns.forEach(warn => warns.push({ type: "error", text: warn }));
     });
 
     console.log("Clases with parants");
@@ -209,19 +208,20 @@ export default function App() {
       const res = validateClass(cl)
       console.log(res);
       res.duplicateFields.forEach(f => {
-        warnings.push({ type: "error", text: `There are multiple fields named ${f} in a class ${cl.name}` });
+        warns.push({ type: "error", text: `There are multiple fields named ${f} in a class ${cl.name}` });
       });
       res.duplicateMethods.forEach(m => {
-        warnings.push({ type: "error", text: `There are duplicate methods named ${m} in a class ${cl.name}` });
+        warns.push({ type: "error", text: `There are duplicate methods named ${m} in a class ${cl.name}` });
       });
     });
 
     const connectionWarnings = validator.validateConnectionTypes();
-    connectionWarnings.forEach(warn => warnings.push({ type: "warning", text: warn }));
+    connectionWarnings.forEach(warn => warns.push({ type: "warning", text: warn }));
 
     const interfaceWarnings = validator.validateInterfaces();
-    interfaceWarnings.forEach(warn => warnings.push({ type: "error", text: warn }));
+    interfaceWarnings.forEach(warn => warns.push({ type: "error", text: warn }));
 
+    setWarnings(warns);
     setBlocklyClasses(jsClasses);
     setPlantUMLText(umlString);
     showPlantUMLImg(umlString);
@@ -259,7 +259,6 @@ export default function App() {
         onWorkspaceChange={workspaceDidChange}
         onXmlChange={setXml}
       />
-       <pre id="generated-xml">{xml}</pre>
 
       <textarea
         id="code"
@@ -267,8 +266,8 @@ export default function App() {
         value={plantUMLText}
         readOnly
       />
+      <button onClick={() => setWarningWndOpen(true)} className={warnings.length === 0 ? "validateBtn" : "validateBtnWarn"}>{`${warnings.length === 0 ? "": `(${warnings.length}) `}Validate`}</button>
       <button onClick={generateUml}>Generate</button>
-      <button onClick={() => setWarningWndOpen(true)}>Validate</button>
       <img alt={""} src={imgSrc} />
 
       <Modal
@@ -289,6 +288,9 @@ export default function App() {
     </>
   );
 }
+
+// <pre id="generated-xml">{xml}</pre>
+
 
 // const dynamicOptions = useCallback(() => {
 //   // ["className", "classId"]
