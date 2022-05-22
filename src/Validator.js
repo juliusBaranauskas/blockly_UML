@@ -11,12 +11,6 @@
     Type
 }*/
 
-// returns true if all methods in given class are unique
-export const checkUniqueMethods = (aClass) => {
-
-  return true;
-}
-
 const connectionsEqual = (c1, c2) => {
   return c1.classBegin.id === c2.classBegin.id
    && c1.classEnd.id === c2.classEnd.id
@@ -126,8 +120,6 @@ export class Validator {
   addParents() {
     this._classes = this._classes.map(cl => {
       const parentsIds = this._connections.filter(conn => conn.classBegin.id === cl.id && Validator.isInheritanceRelationship(conn.type)).map(conn => conn.classEnd.id);
-      console.log("parentsIds");
-      console.log(parentsIds);
       const parentClasses = this._classes.filter(cls => parentsIds?.includes(cls.id)).map(cl => cl.id);
       return {
         ...cl,
