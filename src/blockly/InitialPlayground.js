@@ -10,7 +10,6 @@ const initialXmlFun = function(){/*
                             <field name="field_type">String</field>
                             <field name="element_visibility">public</field>
                             <field name="is_static_checkbox">FALSE</field>
-                            <field name="is_start_checkbox">FALSE</field>
                         </block>
                     </statement>
                     <statement name="fields">

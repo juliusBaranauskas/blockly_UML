@@ -1,12 +1,12 @@
-import "./App.css";
-import "./customBlocks/custom_Blocks";
+import "./styles/App.css";
+import "./blockly/custom_Blocks";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BlocklyWorkspace } from "react-blockly";
 import Blockly from "blockly";
-import "./InitialPlayground.js";
-import { initialXml } from "./InitialPlayground.js";
+import "./blockly/InitialPlayground.js";
+import { initialXml } from "./blockly/InitialPlayground.js";
 import { parseXMLClasses } from "./XmlParser";
-import { toolboxCategories } from "./customBlocks/toolbox";
+import { toolboxCategories } from "./blockly/toolbox";
 // import { findDOMNode } from "react-dom";
 import { generateUMLForClass, getConnectionUMLString } from "./UML_DSL_Generator";
 
@@ -280,7 +280,7 @@ export default function App() {
       >
         <h2>Warnings</h2>
         {warnings.length > 0
-          ? warnings.map(w => <WarningItem text={w.text} type={w.type}/>)
+          ? warnings.map((w, idx) => <WarningItem text={w.text} type={w.type} key={idx} />)
           : <WarningItem text={"0 warnings found :)"} />
         }
         <button className="modalCloseBtn" onClick={() => setWarningWndOpen(false)}>close</button>
