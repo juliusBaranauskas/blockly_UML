@@ -33,7 +33,6 @@ const defl = require("./helpers/deflate.js");
 
 const dynamicDropdownOptions_ = [];
 const addDynamicDropdownOptions = (options) => {
-
   dynamicDropdownOptions_.splice(0, dynamicDropdownOptions_.length);
   dynamicDropdownOptions_.push(['<not selected>', 'OPTION-1']);
   options.forEach(option => dynamicDropdownOptions_.push(option));
