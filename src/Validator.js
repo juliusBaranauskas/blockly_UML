@@ -174,13 +174,34 @@ export class Validator {
     return cl.inheritedMethods;
   }
 
+  getAncestors(cl, classesVisited) {
+    if (classesVisited.has(cl.id)) {
+      // break the cycle - cycle of dependencies detected
+      return undefined;
+    }
+
+    classesVisited.add(cl.id);
+    if (cl.ancestors !== undefined) {
+      return cl.ancestors;
+    }
+
+    const parents = cl.parentClasses.map(prnt => this._classes.find(cls => cls.id === prnt));
+    cl.ancestors = parents?.flatMap(parent => {
+      const ancestors = this.getAncestors(parent, classesVisited);
+      return [...(ancestors || []), parent];
+    }) ?? [];
+    return cl.ancestors;
+  }
+
   addInheritted() {
 
     this._classes.forEach(cl => {
       cl["inheritedFields"] = this.getInheritedFields(cl, new Set());
       cl["inheritedMethods"] = this.getInheritedMethods(cl, new Set());
+      cl.ancestors = this.getAncestors(cl, new Set());
     });
-
+    console.log("ADDED INHERITS:");
+    console.log(this._classes);
     /* {
       type: connType,
       cardinality: connCardinality,
@@ -268,6 +289,16 @@ export class Validator {
     const warnings = [];
     this._classes.forEach(cl => {
       if (cl.classType === "INTERFACE_TYPE" && cl.fields.length !== 0) {
+        warnings.push(`Interfaces cannot have fields. Either change the type of <${cl.name}> to class or abstract class or remove all of it's fields`);
+      }
+    });
+    return warnings;
+  }
+
+  checkDiamond() {
+    const warnings = [];
+    this._classes.forEach(cl => {
+      if (true) {
         warnings.push(`Interfaces cannot have fields. Either change the type of <${cl.name}> to class or abstract class or remove all of it's fields`);
       }
     });
