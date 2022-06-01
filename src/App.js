@@ -291,6 +291,8 @@ export default function App() {
 // <pre id="generated-xml">{xml}</pre>
 
 
+// <path xmlns="http://www.w3.org/2000/svg" stroke="black" transform="translate(1000,300)" d=" M 0 0 L 255 108 L 375 -95" fill="none"></path>
+
 // const dynamicOptions = useCallback(() => {
 //   // ["className", "classId"]
 //   const allClasses = blocklyClasses.map(el => [ el.name, el.id] );

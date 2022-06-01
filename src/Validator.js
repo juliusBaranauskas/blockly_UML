@@ -210,8 +210,6 @@ export class Validator {
       hubId: hubId,
       connection_to: connected_to,
     }; */
-
-    // <path xmlns="http://www.w3.org/2000/svg" stroke="black" transform="translate(1000,300)" d=" M 0 0 L 255 108 L 375 -95" fill="none"></path>
   }
 
   checkDuplicateFields(cl) {
@@ -298,7 +296,19 @@ export class Validator {
   checkDiamond() {
     const warnings = [];
     this._classes.forEach(cl => {
-      if (true) {
+
+      cl.ancestors.forEach(anc => {
+        if (checked.contains(anc.id)) {
+          return;
+        }
+
+        cl.ancestors.find(ancest => ancest.id === anc.id);
+        
+        if (cl.anc. anc.id) {
+
+        }
+      });
+      if (cl.ancestors.forEach(anc => anc.id)) {
         warnings.push(`Interfaces cannot have fields. Either change the type of <${cl.name}> to class or abstract class or remove all of it's fields`);
       }
     });
