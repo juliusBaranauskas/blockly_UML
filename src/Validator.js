@@ -296,22 +296,33 @@ export class Validator {
   checkDiamond() {
     const warnings = [];
     this._classes.forEach(cl => {
-
-      cl.ancestors.forEach(anc => {
-        if (checked.contains(anc.id)) {
-          return;
+      const res = groupBy(cl.ancestors, "id");
+      console.log("Checking DMD");
+      console.log(res);
+      for (const prop in res) {
+        if (res[prop].length > 1) {
+          warnings.push(`Class <${cl.name}> inherits from the same base class <${this._classes.find(cl => cl.id === prop).name}> more than once. Remove the diamond inheritance or continue at your own risk.`);
         }
-
-        cl.ancestors.find(ancest => ancest.id === anc.id);
-        
-        if (cl.anc. anc.id) {
-
-        }
-      });
-      if (cl.ancestors.forEach(anc => anc.id)) {
-        warnings.push(`Interfaces cannot have fields. Either change the type of <${cl.name}> to class or abstract class or remove all of it's fields`);
       }
     });
     return warnings;
   }
 }
+
+const groupBy = function(data, key) { // `data` is an array of objects, `key` is the key (or property accessor) to group by
+  // reduce runs this anonymous function on each element of `data` (the `item` parameter,
+  // returning the `storage` parameter at the end
+  return data.reduce(function(storage, item) {
+    // get the first instance of the key by which we're grouping
+    var group = item[key];
+    
+    // set `storage` for this instance of group to the outer scope (if not empty) or initialize it
+    storage[group] = storage[group] || [];
+    
+    // add this item to its group within `storage`
+    storage[group].push(item);
+    
+    // return the updated storage to the reduce function, which will then loop through the next 
+    return storage; 
+  }, {}); // {} is the initial value of the storage
+};

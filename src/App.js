@@ -14,6 +14,7 @@ import { generateUMLForClass, getConnectionUMLString } from "./UML_DSL_Generator
 import { checkDuplicateConnections, filterDuplConnections, validateClass, Validator } from "./Validator";
 import Modal from "react-modal";
 import WarningItem from "./WarningItem";
+import { initialXmlCustom } from "./blockly/customInitial";
 
 const customStyles = {
   content: {
@@ -207,10 +208,10 @@ export default function App() {
       const res = validateClass(cl)
       console.log(res);
       res.duplicateFields.forEach(f => {
-        warns.push({ type: "error", text: `There are multiple fields named ${f} in a class ${cl.name}` });
+        warns.push({ type: "error", text: `There are multiple fields named <${f}> in a class <${cl.name}>` });
       });
       res.duplicateMethods.forEach(m => {
-        warns.push({ type: "error", text: `There are duplicate methods named ${m} in a class ${cl.name}` });
+        warns.push({ type: "error", text: `There are multiple identical methods named <${m}> in a class <${cl.name}>` });
       });
     });
 
@@ -219,6 +220,9 @@ export default function App() {
 
     const interfaceWarnings = validator.validateInterfaces();
     interfaceWarnings.forEach(warn => warns.push({ type: "error", text: warn }));
+
+    const diamondWarnings = validator.checkDiamond();
+    diamondWarnings.forEach(warn => warns.push({ type: "warning", text: warn }));
 
     setWarnings(warns);
     setBlocklyClasses(jsClasses);
@@ -241,11 +245,34 @@ export default function App() {
     }, 1000);
   }, [generateUml, xml]);
 
+  const [umlOpened, setUmlOpened] = useState(false);
+
+  const toggleNav = useCallback(() => {
+    if (umlOpened) {
+      document.getElementById("mySidepanel").style.width = "0";
+    } else {
+      document.getElementById("mySidepanel").style.width = "500px";
+    }
+
+    setUmlOpened(!umlOpened);
+  }, [umlOpened]);
+
   return (
     <>
+    <div id="mySidepanel" class="sidepanel">
+      <a href="javascript:void(0)" class="closebtn" onClick={toggleNav}>&times;</a>
+      <h2>Warnings</h2>
+      {
+        warnings.length > 0
+          ? warnings.map((w, idx) => <WarningItem text={w.text} type={w.type} key={idx} />)
+          : <WarningItem text={"0 warnings found :)"} />
+      }
+    </div>
+
+    <button class="openbtn" onClick={toggleNav}>&#9776; {`${warnings.length === 0 ? "": `(${warnings.length}) `}Warnings`}</button>
       <BlocklyWorkspace
         toolboxConfiguration={toolboxCategories}
-        initialXml={initialXml}
+        initialXml={initialXmlCustom}
         className="fill-height"
         workspaceConfiguration={{
           grid: {
@@ -258,16 +285,15 @@ export default function App() {
         onWorkspaceChange={workspaceDidChange}
         onXmlChange={setXml}
       />
+<pre id="generated-xml">{xml}</pre>
+      <img alt={""} src={imgSrc} />
 
       <textarea
         id="code"
-        style={{ height: "200px", width: "400px" }}
+        style={{ minHeight: "200px", width: "400px" }}
         value={plantUMLText}
         readOnly
       />
-      <button onClick={() => setWarningWndOpen(true)} className={warnings.length === 0 ? "validateBtn" : "validateBtnWarn"}>{`${warnings.length === 0 ? "": `(${warnings.length}) `}Validate`}</button>
-      <button onClick={generateUml}>Generate</button>
-      <img alt={""} src={imgSrc} />
 
       <Modal
         isOpen={warningWndOpen}
@@ -287,6 +313,10 @@ export default function App() {
     </>
   );
 }
+
+
+// <button onClick={() => setWarningWndOpen(true)} className={warnings.length === 0 ? "validateBtn" : "validateBtnWarn"}>{`${warnings.length === 0 ? "": `(${warnings.length}) `}Validate`}</button>
+// <button onClick={generateUml}>Generate</button>
 
 // <pre id="generated-xml">{xml}</pre>
 
