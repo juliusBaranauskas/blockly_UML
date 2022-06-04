@@ -287,7 +287,7 @@ export class Validator {
     const warnings = [];
     this._classes.forEach(cl => {
       if (cl.classType === "INTERFACE_TYPE" && cl.fields.length !== 0) {
-        warnings.push(`Interfaces cannot have fields. Either change the type of <${cl.name}> to class or abstract class or remove all of it's fields`);
+        warnings.push(`Interfaces cannot have fields. Either change the type of <${cl.name}> to Class or Abstract class OR remove all of it's fields`);
       }
     });
     return warnings;
