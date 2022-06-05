@@ -1,0 +1,106 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+    <block type="connection_hub" id="NjbC%d3L3qs}}M74NEGT" x="110" y="90">
+        <value name="connected_class">
+            <block type="class" id="lC/@HaEJi{jOR.qFSbBC">
+                <field name="class_type">CLASS_TYPE</field>
+                <field name="class_name_input">Circle</field>
+                <statement name="fields">
+                    <block type="class_field" id="b$_1*UPqlxARO:T7%{UE">
+                        <field name="field_name_input">fieldName</field>
+                        <field name="field_type">String</field>
+                        <field name="element_visibility">public</field>
+                        <field name="is_static_checkbox">FALSE</field>
+                    </block>
+                </statement>
+                <statement name="methods">
+                    <block type="class_method" id="p#`*t$Sa4+JTZ}@.*.]2">
+                        <field name="method_name_input">methodName</field>
+                        <field name="field_type">String</field>
+                        <field name="element_visibility">public</field>
+                        <field name="is_static_checkbox">FALSE</field>
+                    </block>
+                </statement>
+            </block>
+        </value>
+        <statement name="connections">
+            <block type="connection" id="k-UB!OI5]9^|?Njcs`AM">
+                <field name="connected_to">]q7g~m[1i(0-h!C-.*Z0</field>
+                <field name="relationship_type">GENERALIZATION</field>
+                <field name="cardinality_dropdown">ZERO_OR_ONE</field>
+                <field name="is_start_checkbox">TRUE</field>
+            </block>
+        </statement>
+    </block>
+    <block type="connection_hub" id="#z3c!1tEM}vb~usoWrCv" x="630" y="70">
+        <value name="connected_class">
+            <block type="class" id="]q7g~m[1i(0-h!C-.*Z0">
+                <field name="class_type">CLASS_TYPE</field>
+                <field name="class_name_input">Shape</field>
+                <statement name="fields">
+                    <block type="class_field" id="}:o_J}L%z|;@?C.7Tcv~">
+                        <field name="field_name_input">fieldName</field>
+                        <field name="field_type">String</field>
+                        <field name="element_visibility">public</field>
+                        <field name="is_static_checkbox">FALSE</field>
+                    </block>
+                </statement>
+                <statement name="methods">
+                    <block type="class_method" id="z4x%nJyMqG3;Wk|XQSV,">
+                        <field name="method_name_input">methodName</field>
+                        <field name="field_type">String</field>
+                        <field name="element_visibility">public</field>
+                        <field name="is_static_checkbox">FALSE</field>
+                    </block>
+                </statement>
+            </block>
+        </value>
+        <statement name="connections">
+            <block type="connection" id="2;{3H~@Es)AAE-!Tj@y(">
+                <field name="connected_to">lC/@HaEJi{jOR.qFSbBC</field>
+                <field name="relationship_type">GENERALIZATION</field>
+                <field name="cardinality_dropdown">ZERO_OR_ONE</field>
+                <field name="is_start_checkbox">FALSE</field>
+                <next>
+                    <block type="connection" id="zg_u3s6Nosh/u}YZ-WYc">
+                        <field name="connected_to">1T~)c.-~CQY!~1e{odhO</field>
+                        <field name="relationship_type">REALIZATION</field>
+                        <field name="cardinality_dropdown">ZERO_OR_ONE</field>
+                        <field name="is_start_checkbox">TRUE</field>
+                    </block>
+                </next>
+            </block>
+        </statement>
+    </block>
+    <block type="connection_hub" id="%T|tgQIh,pfFm}OIAIwG" x="1190" y="90">
+        <value name="connected_class">
+            <block type="class" id="1T~)c.-~CQY!~1e{odhO">
+                <field name="class_type">INTERFACE_TYPE</field>
+                <field name="class_name_input">Object</field>
+                <statement name="fields">
+                    <block type="class_field" id="FT4dVqIk_t0:b[VM:.Yh">
+                        <field name="field_name_input">fieldName</field>
+                        <field name="field_type">String</field>
+                        <field name="element_visibility">public</field>
+                        <field name="is_static_checkbox">FALSE</field>
+                    </block>
+                </statement>
+                <statement name="methods">
+                    <block type="class_method" id="[.sBeH5l:IChC:1/On=V">
+                        <field name="method_name_input">methodName</field>
+                        <field name="field_type">String</field>
+                        <field name="element_visibility">public</field>
+                        <field name="is_static_checkbox">FALSE</field>
+                    </block>
+                </statement>
+            </block>
+        </value>
+        <statement name="connections">
+            <block type="connection" id="OCO8mKa]UXYF^92kqI-P">
+                <field name="connected_to">]q7g~m[1i(0-h!C-.*Z0</field>
+                <field name="relationship_type">REALIZATION</field>
+                <field name="cardinality_dropdown">ZERO_OR_ONE</field>
+                <field name="is_start_checkbox">FALSE</field>
+            </block>
+        </statement>
+    </block>
+</xml>

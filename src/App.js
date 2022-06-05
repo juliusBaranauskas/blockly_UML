@@ -3,31 +3,25 @@ import "./blockly/custom_Blocks";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BlocklyWorkspace } from "react-blockly";
 import Blockly from "blockly";
-import "./blockly/InitialPlayground.js";
-import { initialXml } from "./blockly/InitialPlayground.js";
 import { parseXMLClasses } from "./XmlParser";
 import { toolboxCategories } from "./blockly/toolbox";
-// import { findDOMNode } from "react-dom";
 import { generateUMLForClass, getConnectionUMLString } from "./UML_DSL_Generator";
-
-// import PF from "pathfinding";
 import { checkDuplicateConnections, filterDuplConnections, validateClass, Validator } from "./Validator";
-import Modal from "react-modal";
 import WarningItem from "./WarningItem";
-import { initialXmlCustom } from "./blockly/customInitial";
+import XMLData from './initialXml.xml';
 
-const customStyles = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-    maxWidth: '50%',
-    minWidth: '20%'
-  },
-}
+// const customStyles = {
+//   content: {
+//     top: '50%',
+//     left: '50%',
+//     right: 'auto',
+//     bottom: 'auto',
+//     marginRight: '-50%',
+//     transform: 'translate(-50%, -50%)',
+//     maxWidth: '50%',
+//     minWidth: '20%'
+//   },
+// }
 
 const encoder = require("./helpers/encoder.js");
 const defl = require("./helpers/deflate.js");
@@ -73,6 +67,7 @@ export default function App() {
   const [xml, setXml] = useState("");
   const [plantUMLText, setPlantUMLText] = useState("");
   const [imgSrc, setImgSrc] = useState("");
+  const [initXml, setInitXml] = useState(undefined);
 
   const [blocklyClasses, setBlocklyClasses] = useState([]);
   const [previousImgString, setPreviousImgString] = useState("");
@@ -81,7 +76,7 @@ export default function App() {
   // const [connectionInfo, setConnectionInfo] = useState(undefined);
   // const [connectedClasses, setConnectedClasses] = useState([]);
 
-  const [warningWndOpen, setWarningWndOpen] = useState(false);
+  // const [warningWndOpen, setWarningWndOpen] = useState(false);
   const [warnings, setWarnings] = useState([]);
 
   // [ [classId, classId], [connInfo, connInfo] ]
@@ -232,14 +227,12 @@ export default function App() {
 
 
   const workspaceDidChange = useCallback((workspace) => {
-    // const code = Blockly.JavaScript.workspaceToCode(workspace);
-    // setJavascriptCode(code);
-
     clearTimeout(lastGenerateFuncId.current);
 
     lastGenerateFuncId.current = setTimeout(() => {
       if (xml !== lastXML.current) {
         lastXML.current = xml;
+        console.log(xml);
         generateUml();
       }
     }, 1000);
@@ -257,10 +250,21 @@ export default function App() {
     setUmlOpened(!umlOpened);
   }, [umlOpened]);
 
+  useEffect(() => {
+    fetch(XMLData)
+    .then(res => res.text())
+    .then((response) => {
+      setInitXml(response.replaceAll('\n', ''));
+    })
+    .catch((err) => {
+      setInitXml("");
+    });
+  }, []);
+
   return (
     <>
-    <div id="mySidepanel" class="sidepanel">
-      <a href="javascript:void(0)" class="closebtn" onClick={toggleNav}>&times;</a>
+    <div id="mySidepanel" className="sidepanel">
+      <button className="closebtn" onClick={toggleNav}>&times;</button>
       <h2>Warnings</h2>
       {
         warnings.length > 0
@@ -269,51 +273,52 @@ export default function App() {
       }
     </div>
 
-    <button class="openbtn" onClick={toggleNav}>&#9776; {`${warnings.length === 0 ? "": `(${warnings.length}) `}Warnings`}</button>
-      <BlocklyWorkspace
-        toolboxConfiguration={toolboxCategories}
-        initialXml={initialXmlCustom}
-        className="fill-height"
-        workspaceConfiguration={{
-          grid: {
-            spacing: 20,
-            length: 3,
-            colour: "#ccc",
-            snap: true,
-          },
-        }}
-        onWorkspaceChange={workspaceDidChange}
-        onXmlChange={setXml}
-      />
-<pre id="generated-xml">{xml}</pre>
+    <button className="openbtn" onClick={toggleNav}>&#9776; {`${warnings.length === 0 ? "": `(${warnings.length}) `}Warnings`}</button>
+      {
+      initXml !== undefined &&
+        <BlocklyWorkspace
+          toolboxConfiguration={toolboxCategories}
+          initialXml={initXml}
+          className="fill-height"
+          workspaceConfiguration={{
+            grid: {
+              spacing: 20,
+              length: 3,
+              colour: "#ccc",
+              snap: true,
+            },
+          }}
+          onWorkspaceChange={workspaceDidChange}
+          onXmlChange={setXml}
+        />
+      }
       <img alt={""} src={imgSrc} />
-
       <textarea
         id="code"
         style={{ minHeight: "200px", width: "400px" }}
         value={plantUMLText}
         readOnly
       />
-
-      <Modal
-        isOpen={warningWndOpen}
-        onRequestClose={() => setWarningWndOpen(false)}
-        style={customStyles}
-        contentLabel="Warning list modal"
-        shouldCloseOnEsc={true}
-        shouldCloseOnOverlayClick={true}
-      >
-        <h2>Warnings</h2>
-        {warnings.length > 0
-          ? warnings.map((w, idx) => <WarningItem text={w.text} type={w.type} key={idx} />)
-          : <WarningItem text={"0 warnings found :)"} />
-        }
-        <button className="modalCloseBtn" onClick={() => setWarningWndOpen(false)}>close</button>
-      </Modal>
     </>
   );
 }
 
+
+// <Modal
+// isOpen={warningWndOpen}
+// onRequestClose={() => setWarningWndOpen(false)}
+// style={customStyles}
+// contentLabel="Warning list modal"
+// shouldCloseOnEsc={true}
+// shouldCloseOnOverlayClick={true}
+// >
+// <h2>Warnings</h2>
+// {warnings.length > 0
+//   ? warnings.map((w, idx) => <WarningItem text={w.text} type={w.type} key={idx} />)
+//   : <WarningItem text={"0 warnings found :)"} />
+// }
+// <button className="modalCloseBtn" onClick={() => setWarningWndOpen(false)}>close</button>
+// </Modal>
 
 // <button onClick={() => setWarningWndOpen(true)} className={warnings.length === 0 ? "validateBtn" : "validateBtnWarn"}>{`${warnings.length === 0 ? "": `(${warnings.length}) `}Validate`}</button>
 // <button onClick={generateUml}>Generate</button>

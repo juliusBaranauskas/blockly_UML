@@ -45,7 +45,7 @@ function parseXmlClassName(element) {
 function parseParameter(element) {
   let parameterTypeEl = parseXmlByAttr(element, "field", "name", "parameter_type");
   if (!parameterTypeEl)
-    return undefined; // assign default name that is available [ClassXX]
+    return undefined;
   parameterTypeEl = parameterTypeEl[0];
   let parameterType = parameterTypeEl.textContent;
 
@@ -57,15 +57,20 @@ function parseParameter(element) {
   nameEl = nameEl[0];
   parameterName = nameEl.textContent;
 
-  // let nameTextEl = parseXmlByAttr(nameEl, "field", "name", "TEXT");
-  // if (!nameTextEl)
-  //   return undefined;
-  // nameTextEl = nameTextEl[0];
-  // parameterName = nameTextEl.textContent;
+  let prmtTip = "";
+  let nameTextEl = parseXmlByAttr(element, "field", "name", "TEXT");
+  console.log(nameTextEl);
+  if (nameTextEl) {
+    nameTextEl = nameTextEl[0];
+    prmtTip = nameTextEl.textContent;
+  }
+
+  console.log("PARAM_CUSTOM_TYPE:");
+  console.log(prmtTip);
 
   return {
     name: parameterName,
-    type: parameterType
+    type: prmtTip ?? parameterType
   }
 }
 
@@ -241,8 +246,8 @@ function parseXmlConnections(element, connectedClassId, hubId) {
       connected_to = connected_to[0].textContent
     }
 
-    if (connected_to === connectedClassId)
-      alert("Cannot connect to itself");
+    // if (connected_to === connectedClassId)
+    //   alert("Cannot connect to itself");
     
     connections.push({
       type: connType,
